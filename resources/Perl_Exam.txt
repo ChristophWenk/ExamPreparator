@@ -1,0 +1,374 @@
+Dear Student,
+
+Here is the entrance exam for the Introduction To Perl class 2018.
+Follow the instructions and email the completed exam back to me.
+
+Good luck!
+
+Damian
+
+================================================================================
+                                  START OF EXAM
+================================================================================
+
+Complete this exam by placing an 'X' in the box beside each correct
+answer, like so:
+
+    [ ] This is not the correct answer
+    [ ] This is not the correct answer either
+    [ ] This is an incorrect answer
+    [X] This is the correct answer
+    [ ] This is an irrelevant answer
+
+Scoring: Each question is worth 2 points.
+         Final score will be: SUM / 10
+
+Warning: Each question has only one correct answer. Answers to questions
+         for which two or more boxes are marked with an 'X' will be scored as zero.
+
+Total number of questions: 30
+
+________________________________________________________________________________
+
+ 1. You can find documentation on the Perl language
+    and any installed Perl modules via:
+
+    [X] The command-line utility: perldoc
+    [ ] There is no documentation for Perl
+    [ ] The command-line utility: perlthanks
+    [ ] The command-line utility: perl --doc
+    [ ] The command-line utility: doc4perl
+
+
+________________________________________________________________________________
+
+ 2. In Perl, the idea of "context" is:
+
+    [ ] Are there other surrounding lines of code in the same block?
+    [ ] Where is an expression valid?
+    [X] How many and what kind of value(s) is an expression expected to produce?
+    [ ] Has the expression ever been evaluated?
+    [ ] For what purpose was the expression written, and when was it written?
+
+
+________________________________________________________________________________
+
+ 3. Which one of the following statements is always true about
+    the default scalar variable $_:
+
+    [X] Many built-in functions use it to return their result.
+    [ ] It can only hold numerical values.
+    [ ] It can never be passed to a function or subroutine.
+    [ ] It can never be used in the block of a map or grep.
+    [ ] Many built-in functions use it to provide a missing argument.
+
+
+________________________________________________________________________________
+
+ 4. A "sigil" is:
+
+    [ ] Any '_' character appearing anywhere in a variable name.
+    [ ] Any operator that returns a symbolic value.
+    [ ] Any operator that returns a literal (non-symbolic) value.
+    [ ] Not a feature of Perl.
+    [X] A '$', '@', or '%' character at the start of a variable name.
+
+
+________________________________________________________________________________
+
+ 5. Evaluating an array in a scalar context produces:
+
+    [ ] A run-time exception.
+    [ ] A reference to the array.
+    [ ] A string representing the name of the array.
+    [ ] A compile-time exception.
+    [X] An integer indicating the number of elements stored in the array.
+
+
+________________________________________________________________________________
+
+ 6. The difference between a single-quoted string ('...')
+    and a double-quoted string ("...") is:
+
+    [X] Only a double-quoted string can interpolate variables.
+    [ ] Only a single-quoted string can be assigned to a variable.
+    [ ] Only a single-quoted string can be passed as a subroutine argument.
+    [ ] There is no difference at all between them at all.
+    [ ] Only a double-quoted string can store more than 1 character.
+
+
+________________________________________________________________________________
+
+ 7. The undef() function returns:
+
+    [ ] A boolean value indicating if its argument is undefective .
+    [ ] A unary numerical decimal exponent factorization.
+    [ ] A "un-denormalized" formatted string .
+    [X] A undefined value.
+    [ ] A union of defined floating-point values.
+
+
+________________________________________________________________________________
+
+ 8. Perl has five values it considers to be false.
+    The false values in Perl are:
+
+    [ ] 0, Nil, Null, undef, Noop
+    [X] 0, "0", "", undef, ()
+    [ ] 0, -0, +0, MININT-1, MAXINT+1
+    [ ] 0, (), [], {}, <>
+    [ ] 0, False, 'false', 'False', 'FALSE'
+
+
+________________________________________________________________________________
+
+ 9. The Perl conditional syntax is:
+
+    [X] if (condition) {...} elsif   (condition) {...} else {...}
+    [ ] if (condition) {...} elseif  (condition) {...} last {...}
+    [ ] if (condition) {...} unless  (condition) {...} then {...}
+    [ ] if (condition) {...} else if (condition) {...} else {...}
+    [ ] None of the above.
+
+
+________________________________________________________________________________
+
+10. A scalar variable (such as: $varname) can store:
+
+    [X] A number or a string or a reference.
+    [ ] Only a string.
+    [ ] Only a number.
+    [ ] Only a reference.
+    [ ] A type or a value or a function call.
+
+
+________________________________________________________________________________
+
+11. Arrays and hashes are accessed differently:
+
+    [ ] Arrays are indexed by integers; hashes cannot be indexed.
+    [X] Arrays are indexed by integers; hashes are indexed by strings.
+    [ ] Arrays are indexed by strings;  hashes are indexed by integers.
+    [ ] Arrays cannot be indexed;       hashes are indexed by strings.
+    [ ] Arrays cannot be indexed;       hashes are indexed by integers.
+
+
+________________________________________________________________________________
+
+12. Arguments are passed to a Perl subroutine:
+
+    [ ] Via a call to the built-in values() function.
+    [ ] In the special $@ variable.
+    [ ] In the special @_ variable.
+    [X] In the special @ARGV variable.
+    [ ] In the special $_ variable.
+
+
+________________________________________________________________________________
+
+13. Autovivification means:
+
+    [ ] Perl can create subroutines for you automatically.
+    [ ] Perl can automatically install upgrades of the interpreter.
+    [ ] Perl will sometimes run a script spontaneously without the user asking.
+    [X] Perl can automatically build a nested data-structure as you index into it.
+    [ ] Perl can recover deleted code fragments by disk-trace analysis.
+
+
+________________________________________________________________________________
+
+14. The <=> operator:
+
+    [ ] Compares two numerical values for equality and returns True or False.
+    [ ] Compares two numerical values for approximate equality.
+    [X] Compares two numerical values and returns -1, 0, +1, depending on their order.
+    [ ] Perl doesn't have a <=> operator.
+    [ ] Swaps the contents of two variables (two-way assignment).
+
+
+________________________________________________________________________________
+
+15. The keyword for declaring user-defined subroutines is:
+
+    [ ] func
+    [X] sub
+    [ ] fn
+    [ ] fun
+    [ ] do
+
+
+________________________________________________________________________________
+
+16. To select particular elements from a list,
+    you could use the built-in function:
+
+    [ ] filter()
+    [ ] spindle()
+    [ ] sort()
+    [ ] select()
+    [X] grep()
+
+
+________________________________________________________________________________
+
+17. To throw an exception in Perl,
+    you must use the built-in function:
+
+    [ ] except()
+    [ ] throw()
+    [ ] fail()
+    [X] die()
+    [ ] loser()
+
+
+________________________________________________________________________________
+
+18. To catch an exception in Perl,      
+    you must use the built-in function: 
+
+    [ ] intercept()
+    [ ] handle()
+    [ ] catch()
+    [X] eval()
+    [ ] try()
+
+
+________________________________________________________________________________
+
+19. A lexical variable is accessible:
+
+    [ ] Everywhere after its declaration, in the same file.
+    [X] From the end of its declaration statement, to the end of the surrounding block.
+    [ ] Everywhere after its declaration, in any linked file.
+    [ ] Everywhere in the same file.
+    [ ] From the start of its declaration statement, to the end of the surrounding block.
+
+
+________________________________________________________________________________
+
+20. The four basic repetition quantifiers in Perl regular expressions are:
+
+    [X]  A*      A+       A?        A{N,M}
+    [ ]  A*      A\+      A\?       A\{N,M}
+    [ ]  any(A)  all(A)   opt(A)    none(A)
+    [ ]  A*      A**      *A*       **A
+    [ ]  A\*     A\+      A\?       A\{N,M}
+
+
+________________________________________________________________________________
+
+21. The /g modifier causes a regular expression:
+
+    [ ] To match gender-non-specifically within a string.
+    [ ] To match generically (via fuzzy matching) within a string.
+    [ ] To match globally within the current source file.
+    [ ] To try to guess where it should start matching within a string.
+    [X] To match globally within a string.
+
+
+________________________________________________________________________________
+
+22. The 'use strict;' declaration means:
+
+    [ ] Require all variable names be correctly spelled (in U.S. English).
+    [X] Don't allow any undeclared variables.
+    [ ] Require all filepaths to be absolute (not relative the the current directory).
+    [ ] Make all warnings strict (i.e. throw a fatal exception every time).
+    [ ] Make all variables automatically strictly typed.
+
+
+________________________________________________________________________________
+
+23. The built-in open() function in Perl:
+
+    [ ] Opens a socket (either stream or datagram type).
+    [X] Opens a filehandle connected to a file on disk.
+    [ ] Opens a database connection.
+    [ ] Opens a finalized class for the addition of new methods.
+    [ ] Opens a bug report in your logfile.
+
+
+________________________________________________________________________________
+
+24. Perl comments:
+
+    [ ] Don't exist: Perl does not allow comments in code
+    [X] Start with a # and end at the first following newline
+    [ ] Start with a # and end at the first following #
+    [ ] Start with a /* or // and end with a */ or the first following newline
+    [ ] Start with a # or // and end at the first following newline
+
+
+________________________________________________________________________________
+
+25. To read in one line of text from a filehandle,
+    you would call the built-in function:
+
+    [ ] get( $filehandle )
+    [ ] nextline( $filehandle )
+    [X] readline( $filehandle )
+    [ ] getline( $filehandle )
+    [ ] line( $filehandle )
+
+
+________________________________________________________________________________
+
+26. To concatenate two strings together, you could use the following code:
+
+    [ ] $str1 <=> $str2
+    [X] $str1 . $str2
+    [ ] $str1 + $str2
+    [ ] $str1 & $str2
+    [ ] $str1 ++ $str2
+
+
+________________________________________________________________________________
+
+27. In array indexing and string accesses,
+    looking up a negative index means:
+
+    [ ] Index using the absolute value of the index.
+    [ ] Index using the absolute value of the index, and disable error reporting.
+    [ ] Index using the absolute value of the index, then multiply the result by -1.
+    [X] Index by counting backwards from the end of the array or string.
+    [ ] Index backwards from the start of the array or string, into adjacent memory.
+
+
+________________________________________________________________________________
+
+28. The difference between the eq operator and the == operator is:
+
+    [ ] eq tests for "fuzzy" equality,        == tests for exact equality.
+    [ ] eq always takes exactly two aruments, == can also take three or more.
+    [ ] eq tests for type-equivalence,        == tests for value equality.
+    [ ] eq tests for equality at compiletime, == tests for equality at runtime.
+    [X] eq tests for stringlike equality,     == tests for numerical equality.
+
+
+________________________________________________________________________________
+
+29. When a list is placed inside another list, like so: ((1,2), 3, 4)
+    then Perl:
+
+    [ ] Creates a nested list-of-lists data structure.
+    [X] Merges (or "flattens") the inner elements outwards as part of the outer list.
+    [ ] Selects only certain elements from the inner list, according to the outer list.
+    [ ] Converts the entire expression into nested anonymous arrays.
+    [ ] Reports a compile-time syntax error and terminates compilation.
+
+
+________________________________________________________________________________
+
+30. A series of characters in back-quotes (such as: `chars here`)
+    is the notation for specifying:
+
+    [ ] An immutable character string.
+    [ ] Nothing at all: it's a syntax error.
+    [X] A shell command, which returns a list of lines from the command's STDOUT.
+    [ ] A compressed character string (Perl uses LZW compression by default)
+    [ ] A shorthand for specifying a UTF-8 encoded Unicode character string.
+
+
+================================================================================
+                                  END OF EXAM
+================================================================================
