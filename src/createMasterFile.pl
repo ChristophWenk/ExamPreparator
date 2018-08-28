@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use diagnostics;
 use POSIX qw(strftime);
+use List::Util qw(shuffle);
 
 #==============================
 # Preprocessing
@@ -33,11 +34,21 @@ while (!eof $inputFileHandle) {
     my $sanitizedRow = trim($nextline);
 
     if (substr($sanitizedRow,0,1) eq '[') {
-        if (substr($sanitizedRow,0,3) eq '[x]' or substr($sanitizedRow,0,3) eq '[X]') {
-            say {$outputFileHandle} $nextline;
+        my @questions;
+        while (substr($sanitizedRow,0,1) eq '[') {
+            if (substr($sanitizedRow,0,3) eq '[x]' or substr($sanitizedRow,0,3) eq '[X]') {
+                push @questions, $nextline;
+            }
+            else {
+                push @questions, $nextline;
+            }
+            $nextline = readline($inputFileHandle);
+            chomp($nextline);
+            $sanitizedRow = trim($nextline);
         }
-        else {
-            say {$outputFileHandle} $nextline;
+        my @shuffledQuestions = shuffle @questions;
+        for my $question (@shuffledQuestions) {
+            say {$outputFileHandle} $question;
         }
     }
     else {
@@ -48,12 +59,10 @@ while (!eof $inputFileHandle) {
 #==============================
 # Subroutine definitions
 #==============================
-sub  trim {
+sub trim {
     my $s = shift; $s =~ s/^\s+|\s+$//g;
     return $s;
 }
-
-
 
 #==============================
 # Exit program
