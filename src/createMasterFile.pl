@@ -4,39 +4,59 @@ use warnings;
 use diagnostics;
 use POSIX qw(strftime);
 
+#==============================
+# Preprocessing
+#==============================
 # Get current local timestamp
 my $timestamp = strftime "%Y%m%d-%H%M%S", localtime(time);
 
-#=====================
+#==============================
 # File definitions
-#=====================
+#==============================
 # Only for testing purposes
 my $inputFileName = "short_exam_master_file.txt";
 #my $inputFileName = readline();
 #chomp($inputFileName);
-
 my $inputFilePath  = "resources/MasterFiles/".$inputFileName;
 my $outputFileName = qq($timestamp-$inputFileName);
 my $outputFilePath = "out/".$outputFileName;
 
-open(my $inputFileHandler,  "<", $inputFilePath)  or die "Could not open input file.";
-open(my $outputFileHandler, ">", $outputFilePath) or die "Could not open output file.";
+open(my $inputFileHandle,  "<", $inputFilePath)  or die "Could not open input file.";
+open(my $outputFileHandle, ">", $outputFilePath) or die "Could not open output file.";
 
-#=====================
+#==============================
 # Main processing
-#=====================
+#==============================
+while (!eof $inputFileHandle) {
+    my $nextline = readline($inputFileHandle);
+    chomp($nextline);
+    my $sanitizedRow = trim($nextline);
 
-say $outputFileName;
+    if (substr($sanitizedRow,0,1) eq '[') {
+        if (substr($sanitizedRow,0,3) eq '[x]' or substr($sanitizedRow,0,3) eq '[X]') {
+            say {$outputFileHandle} $nextline;
+        }
+        else {
+            say {$outputFileHandle} $nextline;
+        }
+    }
+    else {
+        say {$outputFileHandle} $sanitizedRow;
+    }
+}
+
+#==============================
+# Subroutine definitions
+#==============================
+sub  trim {
+    my $s = shift; $s =~ s/^\s+|\s+$//g;
+    return $s;
+}
 
 
 
-
-
-
-
-
-#=====================
+#==============================
 # Exit program
-#=====================
-close($inputFileHandler) or die "Could not close input file.";
-close($outputFileHandler) or die "Could not close output file.";
+#==============================
+close($inputFileHandle) or die "Could not close input file.";
+close($outputFileHandle) or die "Could not close output file.";
