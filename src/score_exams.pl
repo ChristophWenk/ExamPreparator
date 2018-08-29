@@ -5,9 +5,30 @@ use warnings;
 use Data::Dumper;
 use experimental 'signatures';
 
-my $master_filename = "resources/MasterFiles/short_exam_master_file.txt";
+my $master_filename = "resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt";
 my %master_questions = get_questions_with_options($master_filename);
 my %master_answers = get_answers(%master_questions);
+
+my $student_filename =  "resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431";
+my %student_questions = get_questions_with_options($student_filename);
+my %student_answers = get_answers(%student_questions);
+
+check_missing_content(%student_answers);
+
+sub check_missing_content(%student){
+    for my $current_question (keys %master_questions) {
+        if(!defined($student{$current_question})){
+            say "missing question: " . $current_question;
+                last;
+        }
+        for my $current_option ( 0 .. $#{ $master_questions{$current_question} } ) {
+            #if (!defined($student{$current_question}[$current_option]) ) {
+                say "missing option: " . $master_questions{$current_question}[$current_option];
+            #}
+
+        }
+    }
+}
 
 sub get_answers(%questions){
     my %answers;
@@ -56,9 +77,11 @@ sub get_questions_with_options($filename) {
     return %questions;
 }
 
-print Dumper(%master_questions);
-say "###############################################";
-print Dumper(%master_answers);
+#print Dumper(%master_questions);
+#print Dumper(%student_questions);
+#say "\n###########\n#########\n###########\n############\n";
+#print Dumper(%master_answers);
+#print Dumper(%student_answers);
 
 #for my $current_question ( keys %master_questions ) {
 #    say "$current_question";
