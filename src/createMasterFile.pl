@@ -48,36 +48,29 @@ while (!eof $inputFileHandle) {
     my $nextline = readline($inputFileHandle);
     chomp($nextline);
 
-    if ($nextline =~ m/\[[^\]]*\]/) {
-        my @questions;
-        while ($nextline =~ m/\[[^\]]*\]/) {
-            if ($nextline =~ m/[Xx]/) {
-                $nextline =~ s/[Xx]/ /;
-                push @questions, $nextline;
-            }
-            else {
-                push @questions, $nextline;
-            }
-            $nextline = readline($inputFileHandle);
-            chomp($nextline);
+            my @questions;
 
-            if ($nextline =~ m/\n/) {
-                say $nextline;
-                #chomp($nextline);
-            }
-            else {
+            while ($nextline =~ m/\[[^\]]*\]/) {
+                if ($nextline =~ m/[Xx]/) {
+                    $nextline =~ s/[Xx]/ /;
+                    push @questions, $nextline;
+                }
+                else {
+                    push @questions, $nextline;
+                }
+                $nextline = readline($inputFileHandle);
                 chomp($nextline);
             }
-        }
-        my @shuffledQuestions = shuffle @questions;
-        for my $question (@shuffledQuestions) {
-            say {$outputFileHandle} $question;
-        }
+            my @shuffledQuestions = shuffle @questions;
+            for my $question (@shuffledQuestions) {
+                say {$outputFileHandle} $question;
+            }
+            @questions = ();
+
+            say {$outputFileHandle} $nextline;
+
     }
-    else {
-        say {$outputFileHandle} $nextline;
-    }
-}
+
 
 #====================================================================
 # Subroutine definitions
