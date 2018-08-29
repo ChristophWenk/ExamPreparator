@@ -21,6 +21,7 @@ use warnings;
 use diagnostics;
 use POSIX qw(strftime);
 use List::Util qw(shuffle);
+use File::Path qw( make_path );
 
 #====================================================================
 # Preprocessing
@@ -37,6 +38,11 @@ my $inputFileName  = "short_exam_master_file.txt";
 my $inputFilePath  = "resources/MasterFiles/".$inputFileName;
 my $outputFileName = qq($timestamp-$inputFileName);
 my $outputFilePath = "out/".$outputFileName;
+
+# Create output path if it not exists
+if ( !-d "out/" ) {
+    make_path "out/" or die "Failed to create path: out/";
+}
 
 open(my $inputFileHandle,  "<", $inputFilePath)  or die "Could not open input file.";
 open(my $outputFileHandle, ">", $outputFilePath) or die "Could not open output file.";
@@ -66,11 +72,8 @@ while (!eof $inputFileHandle) {
                 say {$outputFileHandle} $question;
             }
             @questions = ();
-
             say {$outputFileHandle} $nextline;
-
     }
-
 
 #====================================================================
 # Subroutine definitions
