@@ -47,12 +47,11 @@ open(my $outputFileHandle, ">", $outputFilePath) or die "Could not open output f
 while (!eof $inputFileHandle) {
     my $nextline = readline($inputFileHandle);
     chomp($nextline);
-    my $sanitizedRow = sanitize($nextline);
 
-    if (substr($sanitizedRow,0,1) eq '[') {
+    if ($nextline =~ m/\[[^\]]*\]/) {
         my @questions;
-        while (substr($sanitizedRow,0,1) eq '[') {
-            if (substr($sanitizedRow, 0, 3) =~ m/[Xx]/) {
+        while ($nextline =~ m/\[[^\]]*\]/) {
+            if ($nextline =~ m/[Xx]/) {
                 $nextline =~ s/[Xx]/ /;
                 push @questions, $nextline;
             }
@@ -60,10 +59,13 @@ while (!eof $inputFileHandle) {
                 push @questions, $nextline;
             }
             $nextline = readline($inputFileHandle);
+            chomp($nextline);
 
-            $sanitizedRow = sanitize($nextline);
-            if ($sanitizedRow =~ m/\n|.*/) {
-                say $sanitizedRow;
+            if ($nextline =~ m/\n/) {
+                say $nextline;
+                #chomp($nextline);
+            }
+            else {
                 chomp($nextline);
             }
         }
@@ -80,11 +82,7 @@ while (!eof $inputFileHandle) {
 #====================================================================
 # Subroutine definitions
 #====================================================================
-sub sanitize {
-    my $s = shift;
-    $s =~ s/^\s+|\s+$//;
-    return $s;
-}
+
 
 #====================================================================
 # Exit program
