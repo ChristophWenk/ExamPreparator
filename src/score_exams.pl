@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 my $master_filename = "resources/MasterFiles/short_exam_master_file.txt"; # < means open for reading
-
 my %master_questions = get_master_questions($master_filename);
 
-sub get_master_questions($filename) {
+sub get_master_questions {
+    my ($filename) = ($_[0]);
     open(my $filehandle, "<", $filename) or die "Could not open file '$filename' $!" ;
 
     my %questions;
