@@ -14,19 +14,21 @@
 #
 #         The script solves part 1a of the assignment.
 #====================================================================
-
 use v5.24;
 use strict;
 use warnings;
 use diagnostics;
 use POSIX qw(strftime);
 use List::Util qw(shuffle);
+use File::Path qw( make_path );
+
 
 #====================================================================
 # Preprocessing
 #====================================================================
 # Get current local timestamp
 my $timestamp      = strftime "%Y%m%d-%H%M%S", localtime(time);
+
 
 #====================================================================
 # File definitions
@@ -38,8 +40,14 @@ my $inputFilePath  = "resources/MasterFiles/".$inputFileName;
 my $outputFileName = qq($timestamp-$inputFileName);
 my $outputFilePath = "out/".$outputFileName;
 
+# Create output path if it not exists
+if ( !-d "out/" ) {
+    make_path "out/" or die "Failed to create path: out/";
+}
+
 open(my $inputFileHandle,  "<", $inputFilePath)  or die "Could not open input file.";
 open(my $outputFileHandle, ">", $outputFilePath) or die "Could not open output file.";
+
 
 #====================================================================
 # Main processing
@@ -48,37 +56,33 @@ while (!eof $inputFileHandle) {
     my $nextline = readline($inputFileHandle);
     chomp($nextline);
 
-            my @questions;
+    my @questions;
 
-            while ($nextline =~ m/\[[^\]]*\]/) {
-                if ($nextline =~ m/[Xx]/) {
-                    $nextline =~ s/[Xx]/ /;
-                    push @questions, $nextline;
-                }
-                else {
-                    push @questions, $nextline;
-                }
-                $nextline = readline($inputFileHandle);
-                chomp($nextline);
-            }
-            my @shuffledQuestions = shuffle @questions;
-            for my $question (@shuffledQuestions) {
-                say {$outputFileHandle} $question;
-            }
-            @questions = ();
-
-            say {$outputFileHandle} $nextline;
-
+    while ($nextline =~ m/\[[^\]]*\]/) {
+        if ($nextline =~ m/[Xx]/) {
+            $nextline =~ s/[Xx]/ /;
+            push @questions, $nextline;
+        }
+        else {
+            push @questions, $nextline;
+        }
+        $nextline = readline($inputFileHandle);
+        chomp($nextline);
     }
 
+    if ((my $nrOfQuestions = @questions) > 0) {
+        my @shuffledQuestions = shuffle @questions;
 
-#====================================================================
-# Subroutine definitions
-#====================================================================
-
+        for my $question (@shuffledQuestions) {
+            say {$outputFileHandle} $question;
+        }
+    }
+    say {$outputFileHandle} $nextline;
+}
 
 #====================================================================
 # Exit program
 #====================================================================
 close($inputFileHandle) or die "Could not close input file.";
 close($outputFileHandle) or die "Could not close output file.";
+exit(0);
