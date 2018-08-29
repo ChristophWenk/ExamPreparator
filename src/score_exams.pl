@@ -2,12 +2,14 @@
 use v5.28;
 use strict;
 use warnings;
+use Data::Dumper;
+use experimental 'signatures';
 
-my $master_filename = "resources/MasterFiles/short_exam_master_file.txt"; # < means open for reading
+my $master_filename = "resources/MasterFiles/short_exam_master_file.txt";
 my %master_questions = get_master_questions($master_filename);
 
-sub get_master_questions {
-    my ($filename) = ($_[0]);
+sub get_master_questions($filename) {
+
     open(my $filehandle, "<", $filename) or die "Could not open file '$filename' $!" ;
 
     my %questions;
@@ -29,8 +31,8 @@ sub get_master_questions {
             #say "__skip line" . $row
         }
     }
+    return %questions;
 }
-
 
 for my $current_question ( keys %master_questions ) {
     say "$current_question";
