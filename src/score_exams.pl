@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl perl
 use v5.28;
 use strict;
 use warnings;
@@ -9,11 +9,14 @@ use Statistics::Basic qw< mean mode median >;
 
 #error handling filenames
 
-#perl score_exams.pl FHNW_entrance_exam_master_file_2017.txt *
+#usage
+#perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
 
-my ($master_filename, @student_filenames) = @ARGV;
+#enable windows * file selection
+my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
+my ($master_filename, @student_filenames) = @args;
 
-my $master_file_path = "../resources/MasterFiles/";
+my $master_file_path = "resources/MasterFiles/";
 $master_filename  = $master_file_path . $master_filename;
 
 my %master_questions = get_questions_with_options($master_filename);
@@ -22,9 +25,7 @@ my %master_answers = get_answers(%master_questions);
 my %students_scores;
 
 for my $student_filename (@student_filenames){
-    my $student_file_path = "../resources/SampleResponses/".$student_filename;
-
-    my %student_questions = get_questions_with_options($student_file_path);
+    my %student_questions = get_questions_with_options($student_filename);
     check_missing_content(%student_questions);
 
     my %student_answers = get_answers(%student_questions);
@@ -33,9 +34,14 @@ for my $student_filename (@student_filenames){
     $students_scores{$student_filename} = [ check_answers(%student_answers) ];
 }
 
+#print student score
 for my $current_score(sort keys %students_scores){
     say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
 }
+
+####################################################################
+# Subroutines
+####################################################################
 
 sub check_answers(%current_student_answers){
 
@@ -43,22 +49,22 @@ sub check_answers(%current_student_answers){
     my $answered_correct = 0;
 
     for my $current_question (keys %master_answers){
-        # correct answer
-        if(defined($current_student_answers{$current_question})  &&
-                $master_answers{$current_question} eq $current_student_answers{$current_question}){
+
+        if(defined($current_student_answers{$current_question})
+           &&
+           $master_answers{$current_question}  eq $current_student_answers{$current_question})
+        {
+            # correct answer
             $answered++;
             $answered_correct++;
         }
-        #wrong answer
-        elsif(defined($current_student_answers{$current_question})){
+        elsif(defined($current_student_answers{$current_question}))
+        {
+            #wrong answer
             $answered++;
-        }
-        # missing answer
-        else {
         }
     }
     return ($answered_correct,$answered);
-
 }
 
 sub check_missing_content(%student){
@@ -131,8 +137,6 @@ sub get_questions_with_options($filename) {
                 $row =~ s/^(\[[ ]\]) //;
                 $current_options{$row} = 0;
             }
-        }
-        else { #say "__skip line" . $row
         }
     }
     return %questions;
