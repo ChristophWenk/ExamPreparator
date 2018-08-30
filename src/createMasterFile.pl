@@ -59,8 +59,8 @@ while (!eof $inputFileHandle) {
     my @questions;
 
     while ($nextline =~ m/\[[^\]]*\]/) {
-        if ($nextline =~ m/[Xx]/) {
-            $nextline =~ s/[Xx]/ /;
+        if ($nextline =~ m/\[[Xx]\]/) {
+            $nextline =~ s/\[[Xx]\]/\[ \]/;
             push @questions, $nextline;
         }
         else {

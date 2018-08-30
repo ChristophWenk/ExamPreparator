@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Data::Dumper;
 use experimental 'signatures';
+use List::Util qw< min max >;
+use Statistics::Basic qw< mean mode median >;
 
 my $master_filename = "resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt";
 my %master_questions = get_questions_with_options($master_filename);
@@ -104,3 +106,29 @@ sub get_questions_with_options($filename) {
 #}
 
 sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
+
+
+#====================================================================
+# Statistics
+#====================================================================
+
+# Load the values...
+my %studentScores = (student1 => 13, student2 => 19, student3 => 8, student4 => 8);
+
+my @studentScoresArray = values %studentScores;
+
+# Get amount of students with minimum grade
+my @minimalGradeStudents = grep {$_ eq min(@studentScoresArray)} %studentScores;
+my $minimalGradeStudentsCount = @minimalGradeStudents;
+
+# Get amount of students with maximum grade
+my @maximumGradeStudents = grep {$_ eq max(@studentScoresArray)} %studentScores;
+my $maximumGradeStudentsCount = @maximumGradeStudents;
+
+say "Average number of questions answered:....." . mean(@studentScoresArray);
+say "                             Minimum:....." . min(@studentScoresArray);
+say "                             Maximum:....." . max(@studentScoresArray);
+
+say "Average number of correct answers:........" . mean(@studentScoresArray);
+say "                             Minimum:....." . min(@studentScoresArray) . "   ($minimalGradeStudentsCount Student(s))";
+say "                             Maximum:....." . max(@studentScoresArray) . "   ($maximumGradeStudentsCount Student(s))";
