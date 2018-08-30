@@ -12,7 +12,23 @@ use Statistics::Basic qw< mean mode median >;
 #====================================================================
 
 # Load the values...
+# students1 --> First entry: 13 correct answers, sendond entry: 18 answers given of 20.
 my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20]);
+
+my @correctAnswersList;
+my @totalAnswersList;
+
+# Create statistic arrays
+for my $key (sort keys %studentScores) {
+    my $correctAnswers = $studentScores{$key}[0];
+    my $totalAnswers = $studentScores{$key}[1];
+    push @correctAnswersList, $correctAnswers; # Collect the amount of correct answers given by the student
+    push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
+}
+
+
+say Dumper @correctAnswersList;
+
 
 my @studentScoresArray = values %studentScores;
 
@@ -28,10 +44,10 @@ say Dumper @minimalGradeStudents;
 my @maximumGradeStudents = grep {$_ eq max(@studentScoresArray)} %studentScores;
 my $maximumGradeStudentsCount = @maximumGradeStudents;
 
-say "Average number of questions answered:....." . mean(@studentScoresArray);
-say "                             Minimum:....." . min(@studentScoresArray);
-say "                             Maximum:....." . max(@studentScoresArray);
-
-say "Average number of correct answers:........" . mean(@studentScoresArray);
-say "                             Minimum:....." . min(@studentScoresArray) . "   ($minimalGradeStudentsCount Student(s))";
-say "                             Maximum:....." . max(@studentScoresArray) . "   ($maximumGradeStudentsCount Student(s))";
+say "Average number of questions answered:....." . mean(@totalAnswersList);
+say "                             Minimum:....." . min(@totalAnswersList);
+say "                             Maximum:....." . max(@totalAnswersList);
+print "\n";
+say "Average number of correct answers:........" . mean(@correctAnswersList);
+say "                             Minimum:....." . min(@correctAnswersList) . "   ( Student(s))";
+say "                             Maximum:....." . max(@correctAnswersList) . "   ( Student(s))";

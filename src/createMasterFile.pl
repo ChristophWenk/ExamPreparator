@@ -33,12 +33,13 @@ my $timestamp      = strftime "%Y%m%d-%H%M%S", localtime(time);
 #====================================================================
 # File definitions
 #====================================================================
-#my ($inputFileName)  = @ARGV;
+my ($inputFileName)  = @ARGV;
 # Only for testing purposes
-my $inputFileName  = "short_exam_master_file.txt";
-my $inputFilePath  = "resources/MasterFiles/".$inputFileName;
+#my $inputFileName  = "short_exam_master_file.txt";
+
+my $inputFilePath  = "../resources/MasterFiles/".$inputFileName;
 my $outputFileName = qq($timestamp-$inputFileName);
-my $outputFilePath = "out/".$outputFileName;
+my $outputFilePath = "../out/".$outputFileName;
 
 # Create output path if it not exists
 if ( !-d "out/" ) {
@@ -60,7 +61,7 @@ while (!eof $inputFileHandle) {
 
     while ($nextline =~ m/\[[^\]]*\]/) {
         if ($nextline =~ m/\[[Xx]\]/) {
-            $nextline =~ s/\[[Xx]\]/\[ \]/;
+            $nextline =~ s/\[[Xx]\]/\[ \] /;
             push @questions, $nextline;
         }
         else {
