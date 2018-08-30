@@ -42,8 +42,8 @@ my $outputFileName = qq($timestamp-$inputFileName);
 my $outputFilePath = "../out/".$outputFileName;
 
 # Create output path if it not exists
-if ( !-d "out/" ) {
-    make_path "out/" or die "Failed to create path: out/";
+if ( !-d "../out/" ) {
+    make_path "../out/" or die "Failed to create path: out/";
 }
 
 open(my $inputFileHandle,  "<", $inputFilePath)  or die "Could not open input file.";
