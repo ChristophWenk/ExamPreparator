@@ -86,12 +86,12 @@ sub get_questions_with_options($filename) {
             $current_question = undef;
         }
         elsif(substr($row,0,1) eq '[' && defined($current_question)) { #add option
-            if ($row =~ m/\[\S\]/) {
-                $row =~ s/\[\S\]//;
+            if ($row =~ m/^(\[\S\])/) {
+                $row =~ s/^(\[\S\])//;
                 $current_options{$row} = 1;
             }
             else {
-                $row =~ s/\[[ ]\]//;
+                $row =~ s/^(\[[ ]\])//;
                 $current_options{$row} = 0;
             }
         }
