@@ -16,8 +16,8 @@ use Statistics::Basic qw< mean mode median >;
 my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20]);
 
 # Constants
-my $scoreThreshold = 0.5;
-my $totalAmountOfQuestions = 20;
+my $scoreThreshold = 0.5; # Score < 50%
+my $totalAmountOfQuestions = 20; # Max amount of questions
 
 # Content lists
 my @correctAnswersList;
@@ -33,9 +33,13 @@ for my $key (sort keys %studentScores) {
     push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
 
     if (($studentScores{$key}[0] / $totalAmountOfQuestions) < $scoreThreshold) { # Collect all students below a given threshold
-        $belowScoreThreshold{$key} = $studentScores{$key}[0];
+        $belowScoreThreshold{$key}[0] = $correctAnswers;
+        $belowScoreThreshold{$key}[1] = $totalAnswers;
+        $belowScoreThreshold{$key}[2] = $studentScores{$key}[0];
     }
 }
+
+say Dumper %belowScoreThreshold;
 
 # Get amount of students with minimum amount of questions answered
 my @minimalQuestionsAnsweredList = grep {$_ eq min(@totalAnswersList)} @totalAnswersList;
@@ -53,6 +57,9 @@ my $minimumCorrectlyGivenAnswersCount = @minimumCorrectlyGivenAnswersList;
 my @maximumCorrectlyGivenAnswersList = grep {$_ eq max(@correctAnswersList)} @correctAnswersList;
 my $maximumCorrectlyGivenAnswersCount = @maximumCorrectlyGivenAnswersList;
 
+#====================================================================
+# Screen Output
+#====================================================================
 say "Average number of questions answered:....." . mean(@totalAnswersList);
 say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
 say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
@@ -60,3 +67,8 @@ print "\n";
 say "Average number of correct answers:........" . mean(@correctAnswersList);
 say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount Student(s))";
 say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount Student(s))";
+print "\n";
+say "Results below expectation:";
+for my $key (sort keys %belowScoreThreshold) {
+    say "                             $key.....$belowScoreThreshold{$key}[0]/$belowScoreThreshold{$key}[1]  (score < 50%)";
+}
