@@ -26,22 +26,12 @@ for my $key (sort keys %studentScores) {
     push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
 }
 
-
-say Dumper @correctAnswersList;
-
-
-my @studentScoresArray = values %studentScores;
-
 # Get amount of students with minimum grade
-#my @minimalGradeStudents = grep {$_ eq min(@studentScoresArray)} %studentScores;
-my @minimalGradeStudents = grep {$_ eq min(@studentScoresArray)} %studentScores;
+my @minimalGradeStudents = grep {$_ eq min(@correctAnswersList)} @correctAnswersList;
 my $minimalGradeStudentsCount = @minimalGradeStudents;
 
-say Dumper @minimalGradeStudents;
-
-
 # Get amount of students with maximum grade
-my @maximumGradeStudents = grep {$_ eq max(@studentScoresArray)} %studentScores;
+my @maximumGradeStudents = grep {$_ eq max(@correctAnswersList)} @correctAnswersList;
 my $maximumGradeStudentsCount = @maximumGradeStudents;
 
 say "Average number of questions answered:....." . mean(@totalAnswersList);
@@ -49,5 +39,5 @@ say "                             Minimum:....." . min(@totalAnswersList);
 say "                             Maximum:....." . max(@totalAnswersList);
 print "\n";
 say "Average number of correct answers:........" . mean(@correctAnswersList);
-say "                             Minimum:....." . min(@correctAnswersList) . "   ( Student(s))";
-say "                             Maximum:....." . max(@correctAnswersList) . "   ( Student(s))";
+say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimalGradeStudentsCount Student(s))";
+say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumGradeStudentsCount Student(s))";
