@@ -13,18 +13,27 @@ my $student_filename =  "resources/SampleResponses/20170828-092520-FHNW_entrance
 my %student_questions = get_questions_with_options($student_filename);
 my %student_answers = get_answers(%student_questions);
 
-check_missing_content(%student_answers);
+check_missing_content(%student_questions);
 
 sub check_missing_content(%student){
     for my $current_question (keys %master_questions) {
         if(!defined($student{$current_question})){
-            say "missing question: " . $current_question;
-                last;
+            #say "missing question: " . $current_question;
+                next;
         }
-        for my $current_option ( 0 .. $#{ $master_questions{$current_question} } ) {
+
+        for my $option_index ( 0 .. $#{ $master_questions{$current_question} } ) {
+            #say $master_questions{$current_question}[$option_index];
+            #say Dumper(@{ $student{$current_question}});
+            #say "searching: $master_questions{$current_question}[$option_index]";
+            #print Dumper(@{ $student{$current_question} });
             #if (!defined($student{$current_question}[$current_option]) ) {
-                say "missing option: " . $master_questions{$current_question}[$current_option];
-            #}
+            #print Dumper($student{$current_question});
+            if ( grep( /^$master_questions{$current_question}[$option_index]$/, @{ $student{$current_question} }) ) {
+                say "missing option: " . $master_questions{$current_question}[$option_index];
+            }
+
+
 
         }
     }
@@ -68,9 +77,13 @@ sub get_questions_with_options($filename) {
         if(substr($row,0,1) =~ /^\d/) {  # if row starts with a number
             $current_question = $row;
         }
+        elsif(substr($row,0,1) eq '_'){ # next questions starts
+            $current_question = undef;
+        }
         elsif(substr($row,0,1) eq '[' && defined($current_question)) {
             push @{ $questions{$current_question} }, $row; # append option to anonymous array
         }
+
         else { #say "__skip line" . $row
         }
     }
