@@ -17,28 +17,32 @@ my %student_questions = get_questions_with_options($student_filename);
 check_missing_content(%student_questions);
 
 my %student_answers = get_answers(%student_questions);
-check_answers(%student_answers);
-
+my %students_scores;
+$students_scores{$student_filename} = [ check_answers(%student_answers) ];
+print Dumper(%students_scores);
 
 sub check_answers(%current_student_answers){
-    #print Dumper(%answers);
-    for my $current_question (keys %master_answers){
-        if(defined($current_student_answers{$current_question})  &&
-            $master_answers{$current_question} eq $current_student_answers{$current_question}){
-            say $master_answers{$current_question};
-            say $current_student_answers{$current_question};
-            say "######################### correct!";
-        }
-        elsif(defined($current_student_answers{$current_question})){
-            say $master_answers{$current_question};
-            say $current_student_answers{$current_question};
-            say "######################### wrong!";
-        } else{
-            say $master_answers{$current_question};
-            say "######################### missing!";
-        }
 
+    my $answered = 0;
+    my $answered_correct = 0;
+
+    for my $current_question (keys %master_answers){
+        # correct answer
+        if(defined($current_student_answers{$current_question})  &&
+                $master_answers{$current_question} eq $current_student_answers{$current_question}){
+            $answered++;
+            $answered_correct++;
+        }
+        #wrong answer
+        elsif(defined($current_student_answers{$current_question})){
+            $answered++;
+        }
+        # missing answer
+        else {
+        }
     }
+    return ($answered_correct,$answered);
+
 }
 
 sub check_missing_content(%student){
