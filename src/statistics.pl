@@ -15,29 +15,48 @@ use Statistics::Basic qw< mean mode median >;
 # students1 --> First entry: 13 correct answers, sendond entry: 18 answers given of 20.
 my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20]);
 
+# Constants
+my $scoreThreshold = 0.5;
+my $totalAmountOfQuestions = 20;
+
+# Content lists
 my @correctAnswersList;
 my @totalAnswersList;
+my %belowScoreThreshold;
 
 # Create statistic arrays
 for my $key (sort keys %studentScores) {
     my $correctAnswers = $studentScores{$key}[0];
     my $totalAnswers = $studentScores{$key}[1];
+
     push @correctAnswersList, $correctAnswers; # Collect the amount of correct answers given by the student
     push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
+
+    if (($studentScores{$key}[0] / $totalAmountOfQuestions) < $scoreThreshold) { # Collect all students below a given threshold
+        $belowScoreThreshold{$key} = $studentScores{$key}[0];
+    }
 }
 
-# Get amount of students with minimum grade
-my @minimalGradeStudents = grep {$_ eq min(@correctAnswersList)} @correctAnswersList;
-my $minimalGradeStudentsCount = @minimalGradeStudents;
+# Get amount of students with minimum amount of questions answered
+my @minimalQuestionsAnsweredList = grep {$_ eq min(@totalAnswersList)} @totalAnswersList;
+my $minimalQuestionsAnsweredCount = @minimalQuestionsAnsweredList;
 
-# Get amount of students with maximum grade
-my @maximumGradeStudents = grep {$_ eq max(@correctAnswersList)} @correctAnswersList;
-my $maximumGradeStudentsCount = @maximumGradeStudents;
+# Get amount of students with maximum amount of questions answered
+my @maximumQuestionsAnsweredList = grep {$_ eq max(@totalAnswersList)} @totalAnswersList;
+my $maximumQuestionsAnsweredCount = @maximumQuestionsAnsweredList;
+
+# Get amount of students with minimum of correctly given answers
+my @minimumCorrectlyGivenAnswersList = grep {$_ eq min(@correctAnswersList)} @correctAnswersList;
+my $minimumCorrectlyGivenAnswersCount = @minimumCorrectlyGivenAnswersList;
+
+# Get amount of students with maximum of correctly given answers
+my @maximumCorrectlyGivenAnswersList = grep {$_ eq max(@correctAnswersList)} @correctAnswersList;
+my $maximumCorrectlyGivenAnswersCount = @maximumCorrectlyGivenAnswersList;
 
 say "Average number of questions answered:....." . mean(@totalAnswersList);
-say "                             Minimum:....." . min(@totalAnswersList);
-say "                             Maximum:....." . max(@totalAnswersList);
+say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
+say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
 print "\n";
 say "Average number of correct answers:........" . mean(@correctAnswersList);
-say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimalGradeStudentsCount Student(s))";
-say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumGradeStudentsCount Student(s))";
+say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount Student(s))";
+say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount Student(s))";
