@@ -7,19 +7,35 @@ use experimental 'signatures';
 use List::Util qw< min max >;
 use Statistics::Basic qw< mean mode median >;
 
-my $master_filename = "resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt";
+#error handling filenames
+
+#perl score_exams.pl FHNW_entrance_exam_master_file_2017.txt *
+
+my ($master_filename, @student_filenames) = @ARGV;
+
+my $master_file_path = "../resources/MasterFiles/";
+$master_filename  = $master_file_path . $master_filename;
+
 my %master_questions = get_questions_with_options($master_filename);
 my %master_answers = get_answers(%master_questions);
 
-
-my $student_filename =  "resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431";
-my %student_questions = get_questions_with_options($student_filename);
-check_missing_content(%student_questions);
-
-my %student_answers = get_answers(%student_questions);
 my %students_scores;
-$students_scores{$student_filename} = [ check_answers(%student_answers) ];
-print Dumper(%students_scores);
+
+for my $student_filename (@student_filenames){
+    my $student_file_path = "../resources/SampleResponses/".$student_filename;
+
+    my %student_questions = get_questions_with_options($student_file_path);
+    check_missing_content(%student_questions);
+
+    my %student_answers = get_answers(%student_questions);
+
+    #collect student score
+    $students_scores{$student_filename} = [ check_answers(%student_answers) ];
+}
+
+for my $current_score(sort keys %students_scores){
+    say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
+}
 
 sub check_answers(%current_student_answers){
 
@@ -50,13 +66,13 @@ sub check_missing_content(%student){
     {
         #missing question
         if(!defined($student{$current_question})){
-            say "missing question: " . $current_question;
-                next;
+            say "missing question : " . $current_question;
+            next;
         }
         for my $current_option ( keys %{ $master_questions{$current_question} } ) {
             #missing option
             if (!defined($student{$current_question}{$current_option})) {
-                say "missing option for question : $current_option";
+                say "missing answer : $current_option";
             }
         }
      }
