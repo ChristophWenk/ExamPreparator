@@ -11,6 +11,7 @@ use Statistics::Basic qw< mean mode median >;
 
 #usage
 #perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
+#perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431
 
 #enable windows * file selection
 my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
@@ -38,6 +39,8 @@ for my $student_filename (@student_filenames){
 for my $current_score(sort keys %students_scores){
     say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
 }
+
+
 
 ####################################################################
 # Subroutines
@@ -73,6 +76,13 @@ sub check_missing_content(%student){
         #missing question
         if(!defined($student{$current_question})){
             say "missing question : " . $current_question;
+
+            #my %hash = (tom => ['sally', 'dave', 'jennie'],
+            #    bertie => ['jean']);
+            #print Dumper(%hash);
+            #$hash{paul} = delete $hash{tom};
+            #print Dumper(%hash);
+
             next;
         }
         for my $current_option ( keys %{ $master_questions{$current_question} } ) {
@@ -108,6 +118,18 @@ sub get_answers(%questions){
     return %answers;
 }
 
+sub normalize_string($string){
+
+    my $stopwords = 'the|a|an|of|on|in|by|at|is|are|that|they|for|to|it';
+
+    $string =~ s/\b(?:$stopwords)\b//g;  # remove stop words;
+    $string =~ s/^\s+|\s+$//g;           # trim
+    $string =~ s/\s{2,}/ /g;             # replace multiple spaces with one space;
+    $string = lc($string);               # to lower case
+
+    return $string;
+}
+
 sub get_questions_with_options($filename) {
 
     open(my $filehandle, "<", $filename) or die "Could not open file '$filename' $!" ;
@@ -118,12 +140,19 @@ sub get_questions_with_options($filename) {
 
     while (my $row = readline($filehandle)) {
 
-        $row = trim($row);
+
+
+        #####################################
+        #todo: remove trim and adjust if regex
+        #####################################
+        $row =~ s/^\s+|\s+$//g;           # trim
 
         if(substr($row,0,1) =~ /^\d/) {  # if row starts with a number
             $current_question = $row;
         }
-        elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')  && defined($current_question)){ # save question with options
+        elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')
+                &&
+                defined($current_question)){ # save question with options
             $questions{$current_question} = { %current_options };
             %current_options = ();
             $current_question = undef;
@@ -141,5 +170,3 @@ sub get_questions_with_options($filename) {
     }
     return %questions;
 }
-
-sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
