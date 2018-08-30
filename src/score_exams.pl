@@ -86,7 +86,14 @@ sub get_questions_with_options($filename) {
             $current_question = undef;
         }
         elsif(substr($row,0,1) eq '[' && defined($current_question)) { #add option
-            $current_options{$row} = undef;
+            if ($row =~ m/\[.\]/) {
+                $row =~ s/\[.\]//;
+                $current_options{$row} = 1;
+            }
+            else {
+                $row =~ s/\[[ ]\]//;
+                $current_options{$row} = 0;
+            }
         }
 
         else { #say "__skip line" . $row

@@ -17,8 +17,12 @@ my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12
 my @studentScoresArray = values %studentScores;
 
 # Get amount of students with minimum grade
+#my @minimalGradeStudents = grep {$_ eq min(@studentScoresArray)} %studentScores;
 my @minimalGradeStudents = grep {$_ eq min(@studentScoresArray)} %studentScores;
 my $minimalGradeStudentsCount = @minimalGradeStudents;
+
+say Dumper @minimalGradeStudents;
+
 
 # Get amount of students with maximum grade
 my @maximumGradeStudents = grep {$_ eq max(@studentScoresArray)} %studentScores;
