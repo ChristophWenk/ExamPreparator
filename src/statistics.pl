@@ -11,7 +11,6 @@ use Statistics::Descriptive;
 #====================================================================
 # Statistics
 #====================================================================
-
 # Load the values...
 # students1 --> First entry: 13 correct answers, sendond entry: 18 answers given of 20.
 my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20], student5 => [7,16]);
@@ -28,18 +27,19 @@ my %studentStatisticsList; # Structure: (StudentFile => [
 #                                                           CorrectAnswers,
 #                                                           TotalAnswersGiven,
 #                                                           ScoreBelowThresholdFlag,
-#                                                           BottomCohortFlag
+#                                                           BottomCohortFlag,
+#                                                           BelowMeanFlag
 #                                                         ]
 #                                         )
-my $minimalQuestionsAnsweredCount;
-my $maximumQuestionsAnsweredCount;
-my $minimumCorrectlyGivenAnswersCount;
-my $maximumCorrectlyGivenAnswersCount;
 
 # Variables
 my $stat = Statistics::Descriptive::Full->new();
 my $lowestPercentile;
-
+my $stdv;
+my $minimalQuestionsAnsweredCount;
+my $maximumQuestionsAnsweredCount;
+my $minimumCorrectlyGivenAnswersCount;
+my $maximumCorrectlyGivenAnswersCount;
 
 #====================================================================
 # Main processing
@@ -56,35 +56,15 @@ for my $key (sort keys %studentScores) {
     $studentStatisticsList{$key}[1] = $totalAnswers;
 }
 
-# Calculate Percentile
+# Calculate percentile and standard deviation
 $stat->add_data(@correctAnswersList);
 $lowestPercentile = $stat->percentile($bottomCohortThreshold);
+$stdv = $stat->standard_deviation();
 
 doChecks();
-
 createBasicStatistics();
+putOutput();
 
-
-#====================================================================
-# Screen Output
-#====================================================================
-say "Average number of questions answered:....." . mean(@totalAnswersList);
-say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
-say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
-say "";
-say "Average number of correct answers:........" . mean(@correctAnswersList);
-say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount Student(s))";
-say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount Student(s))";
-say "";
-say "Results below expectation:";
-for my $key (sort keys %studentStatisticsList) {
-   if ($studentStatisticsList{$key}[2] == 1) {
-       say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score < 50%)";
-   }
-   if ($studentStatisticsList{$key}[3] == 1) {
-       say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (bottom 25% of cohort)";
-   }
-}
 
 #====================================================================
 # Subroutine Definitions
@@ -100,11 +80,19 @@ sub doChecks {
         }
 
         # Check if student belongs to lowest percentile
-        if ($studentScores{$key}[0] < $lowestPercentile) {
+        if ($studentScores{$key}[0] <= $lowestPercentile) {
             $studentStatisticsList{$key}[3] = 1;
         }
         else {
             $studentStatisticsList{$key}[3] = 0;
+        }
+
+        # Check if student's score is > 1 stdv below mean
+        if ($studentScores{$key}[0] < mean(@correctAnswersList)) {
+            $studentStatisticsList{$key}[4] = 1;
+        }
+        else {
+            $studentStatisticsList{$key}[4] = 0;
         }
     }
 }
@@ -121,4 +109,30 @@ sub createBasicStatistics {
 
     # Get amount of students with maximum of correctly given answers
     $maximumCorrectlyGivenAnswersCount = grep {$_ == max(@correctAnswersList)} @correctAnswersList;
+}
+
+#====================================================================
+# Screen Output
+#====================================================================
+sub putOutput {
+    say "Average number of questions answered:....." . mean(@totalAnswersList);
+    say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
+    say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
+    say "";
+    say "Average number of correct answers:........" . mean(@correctAnswersList);
+    say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount Student(s))";
+    say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount Student(s))";
+    say "";
+    say "Results below expectation:";
+    for my $key (sort keys %studentStatisticsList) {
+        if ($studentStatisticsList{$key}[2] == 1) {
+            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score < 50%)";
+        }
+        if ($studentStatisticsList{$key}[3] == 1) {
+            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (bottom 25% of cohort)";
+        }
+        if ($studentStatisticsList{$key}[4] == 1) {
+            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score > 1σ below mean)";
+        }
+    }
 }
