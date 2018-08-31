@@ -11,13 +11,15 @@ use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '';
 use src::statistics qw(createStatistics);
 use Text::Levenshtein qw(distance);
-
-# todo: error handling filenames
-
 #usage
 #perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
 #perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431
 
+if (@ARGV < 2) {
+    say "Missing parameters. Usage:";
+    say "$0 <master-file> [response-files]";
+    exit (1);
+}
 #enable windows * file selection
 my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
 my ($master_filename, @student_filenames) = @args;
@@ -30,7 +32,6 @@ $master_filename  = $master_file_path . $master_filename;
 
 my %master_questions = get_questions_with_options($master_filename);
 my %master_answers = get_answers(%master_questions);
-
 #====================================================================
 # Student Data
 #====================================================================
@@ -39,7 +40,7 @@ my %students_answers;
 
 for my $student_filename (@student_filenames){
     my %student_questions = get_questions_with_options($student_filename);
-    %student_questions = check_missing_content($student_filename, %student_questions);
+    %student_questions = sanitize_questions($student_filename, %student_questions);
 
     my %student_answers = get_answers(%student_questions);
 
@@ -105,54 +106,45 @@ sub get_questions_with_options($filename) {
     return %questions;
 }
 
-sub check_missing_content($current_student_filename, %student){
+sub sanitize_questions($current_student_filename, %student_questions){
+
+    say "... checking $current_student_filename";
     for my $current_master_question (keys %master_questions)
     {
-        #missing question
-        if(!defined($student{$current_master_question})){
-
-            #write the student filename only once
-            if($current_student_filename){
-                say $current_student_filename.";";
-                $current_student_filename = undef;
-            }
+        # missing question
+        if(!defined($student_questions{$current_master_question})){
             say "missing question : " . $current_master_question;
-
             #try to match and replace with another question
-            my @student_questions = ( keys %student );
+            my @student_questions = ( keys %student_questions );
             my $matching_question = lookup_similar_string($current_master_question,@student_questions);
 
             if($matching_question){
                 say "used this instead: $matching_question";
                 #replace matching question with master question
-                $student{$current_master_question} = delete $student{$matching_question};
+                $student_questions{$current_master_question} = delete $student_questions{$matching_question};
             }
             else {
-                next; # no matching question, skip all options
+                next; # no matching question, skip all following options
             }
         }
+        # check missing option
         for my $current_master_option ( keys %{ $master_questions{$current_master_question} } ) {
-            #write the student filename only once
-            if($current_student_filename){
-                say $current_student_filename.";";
-                $current_student_filename = undef;
-            }
-            #missing option
-            if (!defined($student{$current_master_question}{$current_master_option})) {
+
+            if (!defined($student_questions{$current_master_question}{$current_master_option})) {
                 say "missing answer   : $current_master_option";
 
-                my @student_options = ( keys %{$student{$current_master_question} });
+                my @student_options = ( keys %{$student_questions{$current_master_question} });
                 my $matching_option = lookup_similar_string($current_master_option,@student_options);
                 if($matching_option){
                     say "used this instead: $matching_option";
                     #replace matching option with master option
-                    $student{$current_master_question}{$current_master_option}
-                        = delete $student{$current_master_question}{$matching_option};
+                    $student_questions{$current_master_question}{$current_master_option}
+                        = delete $student_questions{$current_master_question}{$matching_option};
                 }
             }
         }
     }
-    return %student;
+    return %student_questions;
 }
 
 sub get_answers(%questions){
@@ -184,16 +176,12 @@ sub check_answers(%current_student_answers){
 
     for my $current_question (keys %master_answers){
         if(defined($current_student_answers{$current_question})
-            &&
-            $master_answers{$current_question}  eq $current_student_answers{$current_question})
-        {
-            # correct answer
+                &&     $master_answers{$current_question}
+                    eq $current_student_answers{$current_question}) { # correct answer
             $answered++;
             $answered_correct++;
         }
-        elsif(defined($current_student_answers{$current_question}))
-        {
-            #wrong answer
+        elsif(defined($current_student_answers{$current_question})){ #wrong answer
             $answered++;
         }
     }
@@ -209,8 +197,8 @@ sub lookup_similar_string($string_to_find, @library) {
 
         my $distance = distance($normalized_current_string, $normalized_string_to_find);
 
-        if ($distance < (length($normalized_string_to_find)/10)) {
-            #say "Distance: " . $distance   . " length: ". length($normalized_string_to_find) ;
+        #if edit_distance is less then 10% of string length
+        if ($distance*10 < (length($normalized_string_to_find))) {
             return $current_string;
         }
     }
@@ -218,7 +206,6 @@ sub lookup_similar_string($string_to_find, @library) {
 }
 
 sub normalize_string($string){
-
     my $stopwords = 'the|a|an|of|on|in|by|at|is|\'s|are|that|they|for|to|it';
 
     $string =~ s/\b(?:$stopwords)\b//g;  # remove stop words;
