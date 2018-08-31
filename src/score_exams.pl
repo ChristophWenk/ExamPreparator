@@ -31,16 +31,28 @@ my %master_questions = get_questions_with_options($master_filename);
 my %master_answers = get_answers(%master_questions);
 
 my %students_scores;
+my %students_answers;
 
 for my $student_filename (@student_filenames){
     my %student_questions = get_questions_with_options($student_filename);
-    check_missing_content(%student_questions);
+    %student_questions = check_missing_content(%student_questions);
+
 
     my %student_answers = get_answers(%student_questions);
 
+    #############################
+    # miscounduct
+    # Collect student answers
+    #############################
+    $students_answers{$student_filename} = {%student_answers};
+    ##############################
+    #Statistics
     #collect student score
+    ##############################
     $students_scores{$student_filename} = [ check_answers(%student_answers) ];
 }
+
+
 
 #print student score
 for my $current_score(sort keys %students_scores){
@@ -48,15 +60,13 @@ for my $current_score(sort keys %students_scores){
 }
 
 # Call statistics module
-createStatistics(%students_scores);
-
+#createStatistics(%students_scores);
 
 ####################################################################
 # Subroutines
 ####################################################################
 
 sub check_answers(%current_student_answers){
-
     my $answered = 0;
     my $answered_correct = 0;
 
@@ -80,11 +90,24 @@ sub check_answers(%current_student_answers){
 }
 
 sub check_missing_content(%student){
-    for my $current_question (keys %master_questions)
+    for my $current_master_question (keys %master_questions)
     {
         #missing question
-        if(!defined($student{$current_question})){
-            say "missing question : " . $current_question;
+        if(!defined($student{$current_master_question})){
+            say "missing question : " . $current_master_question;
+
+            #try to match and replace with another question
+            for my $current_student_question(keys %student){
+                print check_string_similarity($current_master_question, $student{$current_student_question});
+                if(check_string_similarity($current_master_question, $student{$current_student_question})){
+                    say "used this instead : $current_student_question";
+                    last;
+                }
+                else{ # no
+
+                }
+            }
+            next;
 
             #my %hash = (tom => ['sally', 'dave', 'jennie'],
             #    bertie => ['jean']);
@@ -92,15 +115,28 @@ sub check_missing_content(%student){
             #$hash{paul} = delete $hash{tom};
             #print Dumper(%hash);
 
-            next;
+
         }
-        for my $current_option ( keys %{ $master_questions{$current_question} } ) {
+        for my $current_option ( keys %{ $master_questions{$current_master_question} } ) {
             #missing option
-            if (!defined($student{$current_question}{$current_option})) {
+            if (!defined($student{$current_master_question}{$current_option})) {
                 say "missing answer : $current_option";
             }
         }
      }
+    return %student;
+}
+
+sub check_string_similarity ($string1, $string2){
+    $string1 = normalize_string($string1);
+    $string2 = normalize_string($string2);
+
+    if($string1 eq $string2){
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 sub get_answers(%questions){
