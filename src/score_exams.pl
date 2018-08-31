@@ -12,9 +12,7 @@ use lib dirname(dirname abs_path $0) . '';
 use src::statistics qw(createStatistics);
 
 
-
-
-#error handling filenames
+# todo: error handling filenames
 
 #usage
 #perl src/score_exams.pl FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
@@ -24,19 +22,24 @@ use src::statistics qw(createStatistics);
 my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
 my ($master_filename, @student_filenames) = @args;
 
+#====================================================================
+# Master Data
+#====================================================================
 my $master_file_path = "resources/MasterFiles/";
 $master_filename  = $master_file_path . $master_filename;
 
 my %master_questions = get_questions_with_options($master_filename);
 my %master_answers = get_answers(%master_questions);
 
+#====================================================================
+# Student Data
+#====================================================================
 my %students_scores;
 my %students_answers;
 
 for my $student_filename (@student_filenames){
     my %student_questions = get_questions_with_options($student_filename);
     %student_questions = check_missing_content(%student_questions);
-
 
     my %student_answers = get_answers(%student_questions);
 
@@ -52,8 +55,6 @@ for my $student_filename (@student_filenames){
     $students_scores{$student_filename} = [ check_answers(%student_answers) ];
 }
 
-
-
 #print student score
 for my $current_score(sort keys %students_scores){
     say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
@@ -62,31 +63,46 @@ for my $current_score(sort keys %students_scores){
 # Call statistics module
 #createStatistics(%students_scores);
 
-####################################################################
+#====================================================================
 # Subroutines
-####################################################################
+#====================================================================
 
-sub check_answers(%current_student_answers){
-    my $answered = 0;
-    my $answered_correct = 0;
+sub get_questions_with_options($filename) {
 
-    for my $current_question (keys %master_answers){
+    open(my $filehandle, "<", $filename) or die "Could not open file '$filename' $!" ;
 
-        if(defined($current_student_answers{$current_question})
-           &&
-           $master_answers{$current_question}  eq $current_student_answers{$current_question})
-        {
-            # correct answer
-            $answered++;
-            $answered_correct++;
+    my %questions;
+    my $current_question;
+    my %current_options;
+
+    while (my $row = readline($filehandle)) {
+        #####################################
+        #todo: remove trim and adjust if regex
+        #####################################
+        $row =~ s/^\s+|\s+$//g;           # trim
+
+        if(substr($row,0,1) =~ /^\d/) {  # if row starts with a number
+            $current_question = $row;
         }
-        elsif(defined($current_student_answers{$current_question}))
-        {
-            #wrong answer
-            $answered++;
+        elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')
+                &&
+                defined($current_question)){ # save question with options
+            $questions{$current_question} = { %current_options };
+            %current_options = ();
+            $current_question = undef;
+        }
+        elsif(substr($row,0,1) eq '[' && defined($current_question)) { #add option
+            if ($row =~ m/^(\[\S\])/ ) {
+                $row =~ s/^(\[\S\]) //;
+                $current_options{$row} = 1;
+            }
+            else {
+                $row =~ s/^(\[[ ]\]) //;
+                $current_options{$row} = 0;
+            }
         }
     }
-    return ($answered_correct,$answered);
+    return %questions;
 }
 
 sub check_missing_content(%student){
@@ -115,7 +131,6 @@ sub check_missing_content(%student){
             #$hash{paul} = delete $hash{tom};
             #print Dumper(%hash);
 
-
         }
         for my $current_option ( keys %{ $master_questions{$current_master_question} } ) {
             #missing option
@@ -123,8 +138,53 @@ sub check_missing_content(%student){
                 say "missing answer : $current_option";
             }
         }
-     }
+    }
     return %student;
+}
+
+sub get_answers(%questions){
+    my %answers;
+
+    for my $current_question (keys %questions) {
+        $answers{$current_question} = undef;
+
+        for my $current_option ( keys %{ $questions{$current_question} } ) {
+            #new answer
+            if( $questions{$current_question}{$current_option}
+                && !defined($answers{$current_question})){
+                $answers{$current_question} = $current_option;
+            }
+            #anwer already available
+            elsif( $questions{$current_question}{$current_option}
+                && defined($answers{$current_question})){
+                $answers{$current_question} = undef;
+                last;
+            }
+        }
+    }
+    return %answers;
+}
+
+sub check_answers(%current_student_answers){
+    my $answered = 0;
+    my $answered_correct = 0;
+
+    for my $current_question (keys %master_answers){
+        if(defined($current_student_answers{$current_question})
+            &&
+            $master_answers{$current_question}  eq $current_student_answers{$current_question})
+        {
+            # correct answer
+            $answered++;
+            $answered_correct++;
+        }
+        elsif(defined($current_student_answers{$current_question}))
+        {
+            #wrong answer
+            $answered++;
+        }
+    }
+    return ($answered_correct,$answered);
 }
 
 sub check_string_similarity ($string1, $string2){
@@ -139,30 +199,6 @@ sub check_string_similarity ($string1, $string2){
     }
 }
 
-sub get_answers(%questions){
-    my %answers;
-
-    for my $current_question (keys %questions) {
-
-        $answers{$current_question} = undef;
-
-        for my $current_option ( keys %{ $questions{$current_question} } ) {
-            #new answer
-            if( $questions{$current_question}{$current_option}
-            && !defined($answers{$current_question})){
-                $answers{$current_question} = $current_option;
-            }
-            #anwer already available
-            elsif( $questions{$current_question}{$current_option}
-                && defined($answers{$current_question})){
-                $answers{$current_question} = undef;
-                last;
-            }
-        }
-    }
-    return %answers;
-}
-
 sub normalize_string($string){
 
     my $stopwords = 'the|a|an|of|on|in|by|at|is|are|that|they|for|to|it';
@@ -173,45 +209,4 @@ sub normalize_string($string){
     $string = lc($string);               # to lower case
 
     return $string;
-}
-
-sub get_questions_with_options($filename) {
-
-    open(my $filehandle, "<", $filename) or die "Could not open file '$filename' $!" ;
-
-    my %questions;
-    my $current_question;
-    my %current_options;
-
-    while (my $row = readline($filehandle)) {
-
-
-
-        #####################################
-        #todo: remove trim and adjust if regex
-        #####################################
-        $row =~ s/^\s+|\s+$//g;           # trim
-
-        if(substr($row,0,1) =~ /^\d/) {  # if row starts with a number
-            $current_question = $row;
-        }
-        elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')
-                &&
-                defined($current_question)){ # save question with options
-            $questions{$current_question} = { %current_options };
-            %current_options = ();
-            $current_question = undef;
-        }
-        elsif(substr($row,0,1) eq '[' && defined($current_question)) { #add option
-            if ($row =~ m/^(\[\S\])/ ) {
-                $row =~ s/^(\[\S\]) //;
-                $current_options{$row} = 1;
-            }
-            else {
-                $row =~ s/^(\[[ ]\]) //;
-                $current_options{$row} = 0;
-            }
-        }
-    }
-    return %questions;
 }
