@@ -120,6 +120,12 @@ sub doBasicStatistics {
 # Screen Output
 #====================================================================
 sub putOutput {
+
+    # print individual score of each student
+    for my $current_score(sort keys %studentScores){
+        say "$current_score..................$studentScores{$current_score}[0]/$studentScores{$current_score}[1]";
+    }
+
     say "Average number of questions answered:....." . mean(@totalAnswersList);
     say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
     say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";

@@ -11,6 +11,11 @@ use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '';
 use src::statistics qw(createStatistics);
 use Text::Levenshtein qw(distance);
+
+#====================================================================
+# Score Exams
+#====================================================================
+
 #usage
 #perl src/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
 #perl src/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431
@@ -21,7 +26,7 @@ if (@ARGV < 2) {
     say "$0 <master-file> [response-files]";
     exit (1);
 }
-#enable windows * file selection
+# enable windows * file selection
 my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
 my ($master_filename, @student_filenames) = @args;
 
@@ -47,7 +52,9 @@ my %students_scores;              #structure: {student1 => [count_correct, count
 my %students_answers;             #structure: {student1 => { question1 => answer1, question2 => answer2, .. },
 #                                              student2 => { question1 => answer1, question2 => answer2, .. }
 #                                             }
-
+#====================================================================
+# Main processing
+#====================================================================
 # get master data
 %master_questions = get_data_from_file($master_filename);
 %master_answers   = get_answers(%master_questions);
@@ -65,16 +72,11 @@ for my $student_filename (@student_filenames){
     $students_answers{$student_filename} = {%student_answers};
 }
 
-#print student score
-for my $current_score(sort keys %students_scores){
-    say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
-}
-
 # Call statistics module
 createStatistics(%students_scores);
 
 #====================================================================
-# Subroutines
+# Subroutine Definitions
 #====================================================================
 
 sub get_data_from_file($filename) {
