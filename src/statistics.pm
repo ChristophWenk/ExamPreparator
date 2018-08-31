@@ -7,13 +7,16 @@ use experimental 'signatures';
 use List::Util qw< min max >;
 use Statistics::Basic qw< mean mode median >;
 use Statistics::Descriptive;
+use Exporter qw(import);
+
+our @EXPORT_OK = qw(createStatistics);
 
 #====================================================================
 # Statistics
 #====================================================================
 # Load the values...
 # students1 --> First entry: 13 correct answers, sendond entry: 18 answers given of 20.
-my %studentScores = (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20], student5 => [7,16]);
+my %studentScores; #= (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20], student5 => [7,16]);
 
 # Constants
 my $scoreThreshold = 0.5; # Score < 50%
@@ -44,6 +47,8 @@ my $maximumCorrectlyGivenAnswersCount;
 #====================================================================
 # Main processing
 #====================================================================
+sub createStatistics {
+    %studentScores = @_;
 # Create statistic arrays
 for my $key (sort keys %studentScores) {
     my $correctAnswers = $studentScores{$key}[0];
@@ -62,9 +67,9 @@ $lowestPercentile = $stat->percentile($bottomCohortThreshold);
 $stdv = $stat->standard_deviation();
 
 doChecks();
-createBasicStatistics();
+doBasicStatistics();
 putOutput();
-
+}
 
 #====================================================================
 # Subroutine Definitions
@@ -97,7 +102,7 @@ sub doChecks {
     }
 }
 
-sub createBasicStatistics {
+sub doBasicStatistics {
     # Get amount of students with minimum amount of questions answered
     $minimalQuestionsAnsweredCount = grep {$_ == min(@totalAnswersList)} @totalAnswersList;
 
@@ -128,11 +133,13 @@ sub putOutput {
         if ($studentStatisticsList{$key}[2] == 1) {
             say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score < 50%)";
         }
-        if ($studentStatisticsList{$key}[3] == 1) {
+        elsif ($studentStatisticsList{$key}[3] == 1) {
             say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (bottom 25% of cohort)";
         }
-        if ($studentStatisticsList{$key}[4] == 1) {
+        elsif ($studentStatisticsList{$key}[4] == 1) {
             say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score > 1σ below mean)";
         }
     }
 }
+
+42;

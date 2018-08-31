@@ -6,6 +6,13 @@ use Data::Dumper;
 use experimental 'signatures';
 use List::Util qw< min max >;
 use Statistics::Basic qw< mean mode median >;
+use File::Basename qw(dirname);
+use Cwd  qw(abs_path);
+use lib dirname(dirname abs_path $0) . '';
+use src::statistics qw(createStatistics);
+
+
+
 
 #error handling filenames
 
@@ -40,6 +47,8 @@ for my $current_score(sort keys %students_scores){
     say "$current_score..................$students_scores{$current_score}[0]/$students_scores{$current_score}[1]";
 }
 
+# Call statistics module
+createStatistics(%students_scores);
 
 
 ####################################################################
