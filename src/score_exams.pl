@@ -112,25 +112,19 @@ sub check_missing_content(%student){
             say "missing question : " . $current_master_question;
 
             #try to match and replace with another question
-            for my $current_student_question(keys %student){
-                print check_string_similarity($current_master_question, $student{$current_student_question});
-                if(check_string_similarity($current_master_question, $student{$current_student_question})){
-                    say "used this instead : $current_student_question";
-                    last;
-                }
-                else{ # no
+            my @student_questions = ( keys %student );
+            my $matching_question = lookup_similar_string($current_master_question,@student_questions);
 
-                }
+            if($matching_question){
+                say "used this instead: $matching_question";
+                #replace matching question with master question
+                $student{$current_master_question} = delete $student{$matching_question};
             }
-            next;
-
-            #my %hash = (tom => ['sally', 'dave', 'jennie'],
-            #    bertie => ['jean']);
-            #print Dumper(%hash);
-            #$hash{paul} = delete $hash{tom};
-            #print Dumper(%hash);
-
+            else {
+                next; # no matching question, skip all options
+            }
         }
+
         for my $current_option ( keys %{ $master_questions{$current_master_question} } ) {
             #missing option
             if (!defined($student{$current_master_question}{$current_option})) {
@@ -186,21 +180,22 @@ sub check_answers(%current_student_answers){
     return ($answered_correct,$answered);
 }
 
-sub check_string_similarity ($string1, $string2){
-    $string1 = normalize_string($string1);
-    $string2 = normalize_string($string2);
+sub lookup_similar_string($string_to_find, @library) {
 
-    if($string1 eq $string2){
-        return 1;
+    $string_to_find = normalize_string($string_to_find);
+
+    for my $current_string (@library) {
+        my $normalized_current_string = normalize_string($current_string);
+        if ($string_to_find eq $normalized_current_string) {
+            return $current_string;
+        }
     }
-    else {
-        return 0;
-    }
+    return '';
 }
 
 sub normalize_string($string){
 
-    my $stopwords = 'the|a|an|of|on|in|by|at|is|are|that|they|for|to|it';
+    my $stopwords = 'the|a|an|of|on|in|by|at|is|\'s|are|that|they|for|to|it';
 
     $string =~ s/\b(?:$stopwords)\b//g;  # remove stop words;
     $string =~ s/^\s+|\s+$//g;           # trim
