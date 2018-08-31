@@ -10,6 +10,7 @@ use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '';
 use src::statistics qw(createStatistics);
+use Text::Levenshtein qw(distance);
 
 # todo: error handling filenames
 
@@ -38,7 +39,7 @@ my %students_answers;
 
 for my $student_filename (@student_filenames){
     my %student_questions = get_questions_with_options($student_filename);
-    %student_questions = check_missing_content(%student_questions);
+    %student_questions = check_missing_content($student_filename, %student_questions);
 
     my %student_answers = get_answers(%student_questions);
 
@@ -104,11 +105,17 @@ sub get_questions_with_options($filename) {
     return %questions;
 }
 
-sub check_missing_content(%student){
+sub check_missing_content($current_student_filename, %student){
     for my $current_master_question (keys %master_questions)
     {
         #missing question
         if(!defined($student{$current_master_question})){
+
+            #write the student filename only once
+            if($current_student_filename){
+                say $current_student_filename.";";
+                $current_student_filename = undef;
+            }
             say "missing question : " . $current_master_question;
 
             #try to match and replace with another question
@@ -124,8 +131,12 @@ sub check_missing_content(%student){
                 next; # no matching question, skip all options
             }
         }
-
         for my $current_master_option ( keys %{ $master_questions{$current_master_question} } ) {
+            #write the student filename only once
+            if($current_student_filename){
+                say $current_student_filename.";";
+                $current_student_filename = undef;
+            }
             #missing option
             if (!defined($student{$current_master_question}{$current_master_option})) {
                 say "missing answer   : $current_master_option";
@@ -191,11 +202,15 @@ sub check_answers(%current_student_answers){
 
 sub lookup_similar_string($string_to_find, @library) {
 
-    $string_to_find = normalize_string($string_to_find);
+    my $normalized_string_to_find = normalize_string($string_to_find);
 
     for my $current_string (@library) {
         my $normalized_current_string = normalize_string($current_string);
-        if ($string_to_find eq $normalized_current_string) {
+
+        my $distance = distance($normalized_current_string, $normalized_string_to_find);
+
+        if ($distance < (length($normalized_string_to_find)/10)) {
+            #say "Distance: " . $distance   . " length: ". length($normalized_string_to_find) ;
             return $current_string;
         }
     }
