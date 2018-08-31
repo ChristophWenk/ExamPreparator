@@ -125,10 +125,19 @@ sub check_missing_content(%student){
             }
         }
 
-        for my $current_option ( keys %{ $master_questions{$current_master_question} } ) {
+        for my $current_master_option ( keys %{ $master_questions{$current_master_question} } ) {
             #missing option
-            if (!defined($student{$current_master_question}{$current_option})) {
-                say "missing answer : $current_option";
+            if (!defined($student{$current_master_question}{$current_master_option})) {
+                say "missing answer   : $current_master_option";
+
+                my @student_options = ( keys %{$student{$current_master_question} });
+                my $matching_option = lookup_similar_string($current_master_option,@student_options);
+                if($matching_option){
+                    say "used this instead: $matching_option";
+                    #replace matching option with master option
+                    $student{$current_master_question}{$current_master_option}
+                        = delete $student{$current_master_question}{$matching_option};
+                }
             }
         }
     }
