@@ -11,7 +11,6 @@ use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '';
 use src::statistics qw(createStatistics);
 
-
 # todo: error handling filenames
 
 #usage
@@ -61,7 +60,7 @@ for my $current_score(sort keys %students_scores){
 }
 
 # Call statistics module
-#createStatistics(%students_scores);
+createStatistics(%students_scores);
 
 #====================================================================
 # Subroutines
