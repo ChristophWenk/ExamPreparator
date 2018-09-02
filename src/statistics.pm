@@ -20,7 +20,6 @@
 use v5.28;
 use strict;
 use warnings;
-use Data::Dumper;
 use experimental 'signatures';
 use List::Util qw< min max >;
 use Statistics::Basic qw< mean mode median >;
