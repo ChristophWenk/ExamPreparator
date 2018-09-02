@@ -1,4 +1,22 @@
-#!/usr/bin/perl
+#! /usr/bin/env perl
+#====================================================================
+# @title  'statistics'
+# @author Christoph Wenk, Dimitri Muralt
+# @date   30.08.2018
+# @desc   This script get a hash as an input and creates various statistic
+#         lists with it. It then puts those messages to STDOUT for the
+#         user to read.
+#
+#         Callable by other scripts. Needs hash as input with the following
+#         structure:
+#         (StudentFile => [
+#                           CorrectAnswers,
+#                           TotalAnswersGiven
+#                         ]
+#         )
+#
+#         The script solves part 3 of the assignment.
+#====================================================================
 use v5.28;
 use strict;
 use warnings;
@@ -8,22 +26,21 @@ use List::Util qw< min max >;
 use Statistics::Basic qw< mean mode median >;
 use Statistics::Descriptive;
 use Exporter qw(import);
+use utf8;
+use open ':std', ':encoding(UTF-8)';
 
 our @EXPORT_OK = qw(createStatistics);
 
 #====================================================================
-# Statistics
+# Definitions
 #====================================================================
-# Load the values...
-# students1 --> First entry: 13 correct answers, sendond entry: 18 answers given of 20.
-my %studentScores; #= (student1 => [13,18], student2 => [19,20], student3 => [8,12], student4 => [8,20], student5 => [7,16]);
-
 # Constants
 my $scoreThreshold = 0.5; # Score < 50%
 my $totalAmountOfQuestions = 20; # Max amount of questions
 my $bottomCohortThreshold = 25;
 
 # Content lists
+my %studentScores;
 my @correctAnswersList;
 my @totalAnswersList;
 my %studentStatisticsList; # Structure: (StudentFile => [
@@ -32,7 +49,7 @@ my %studentStatisticsList; # Structure: (StudentFile => [
 #                                                           ScoreBelowThresholdFlag,
 #                                                           BottomCohortFlag,
 #                                                           BelowMeanFlag
-#                                                         ]
+#                                                       ]
 #                                         )
 
 # Variables
@@ -45,30 +62,30 @@ my $minimumCorrectlyGivenAnswersCount;
 my $maximumCorrectlyGivenAnswersCount;
 
 #====================================================================
-# Main processing
+# Main Processing
 #====================================================================
 sub createStatistics {
     %studentScores = @_;
-# Create statistic arrays
-for my $key (sort keys %studentScores) {
-    my $correctAnswers = $studentScores{$key}[0];
-    my $totalAnswers = $studentScores{$key}[1];
+    # Create statistic arrays
+    for my $key (sort keys %studentScores) {
+        my $correctAnswers = $studentScores{$key}[0];
+        my $totalAnswers = $studentScores{$key}[1];
 
-    push @correctAnswersList, $correctAnswers; # Collect the amount of correct answers given by the student
-    push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
+        push @correctAnswersList, $correctAnswers; # Collect the amount of correct answers given by the student
+        push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
 
-    $studentStatisticsList{$key}[0] = $correctAnswers;
-    $studentStatisticsList{$key}[1] = $totalAnswers;
-}
+        $studentStatisticsList{$key}[0] = $correctAnswers;
+        $studentStatisticsList{$key}[1] = $totalAnswers;
+    }
 
-# Calculate percentile and standard deviation
-$stat->add_data(@correctAnswersList);
-$lowestPercentile = $stat->percentile($bottomCohortThreshold);
-$stdv = $stat->standard_deviation();
+    # Calculate percentile and standard deviation
+    $stat->add_data(@correctAnswersList);
+    $lowestPercentile = $stat->percentile($bottomCohortThreshold);
+    $stdv = $stat->standard_deviation();
 
-doChecks();
-doBasicStatistics();
-putOutput();
+    doChecks();
+    doBasicStatistics();
+    putOutput();
 }
 
 #====================================================================
@@ -148,4 +165,5 @@ sub putOutput {
     }
 }
 
+# True statement needed for use-statement (module import/export)
 42;

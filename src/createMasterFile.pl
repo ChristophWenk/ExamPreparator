@@ -1,7 +1,7 @@
 #! /usr/bin/env perl
 #====================================================================
 # @title  'createMasterFile'
-# @author Christoph Wenk
+# @author Christoph Wenk, Dimitri Muralt
 # @date   29.08.2018
 # @desc   This script reads in an input questionnaire file located
 #         in the 'resources' folder. The filename must be specified
