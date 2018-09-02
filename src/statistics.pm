@@ -60,6 +60,7 @@ my $minimalQuestionsAnsweredCount;
 my $maximumQuestionsAnsweredCount;
 my $minimumCorrectlyGivenAnswersCount;
 my $maximumCorrectlyGivenAnswersCount;
+my $studentString;
 
 #====================================================================
 # Main Processing
@@ -138,7 +139,7 @@ sub doBasicStatistics {
 }
 
 #====================================================================
-# Screen Output
+# Screen Output Subroutines
 #====================================================================
 sub putOutput {
     say "";
@@ -150,15 +151,22 @@ sub putOutput {
     for my $current_score(sort keys %studentScores){
         say "$current_score..................$studentScores{$current_score}[0]/$studentScores{$current_score}[1]";
     }
+
     say "";
     say "Average number of questions answered:....." . mean(@totalAnswersList);
-    say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
-    say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
+    $studentString = formatStudents($minimalQuestionsAnsweredCount);
+    say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount $studentString)";
+    $studentString = formatStudents($maximumQuestionsAnsweredCount);
+    say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount $studentString)";
     say "";
+
     say "Average number of correct answers:........" . mean(@correctAnswersList);
-    say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount Student(s))";
-    say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount Student(s))";
+    $studentString = formatStudents($minimumCorrectlyGivenAnswersCount);
+    say "                             Minimum:....." . min(@correctAnswersList) . "   ($minimumCorrectlyGivenAnswersCount $studentString)";
+    $studentString = formatStudents($maximumCorrectlyGivenAnswersCount);
+    say "                             Maximum:....." . max(@correctAnswersList) . "   ($maximumCorrectlyGivenAnswersCount $studentString)";
     say "";
+
     say "Results below expectation:";
     for my $key (sort keys %studentStatisticsList) {
         if ($studentStatisticsList{$key}[2] == 1) {
@@ -172,6 +180,10 @@ sub putOutput {
         }
     }
 
+}
+
+sub formatStudents($count) {
+    if ($count == 1) {return "student";} else {return "students";}
 }
 
 # True statement needed for use-statement (module import/export)
