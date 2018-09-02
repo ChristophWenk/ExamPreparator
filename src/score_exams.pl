@@ -1,11 +1,25 @@
-#!/usr/bin/perl perl
+#! /usr/bin/env perl
+#====================================================================
+# @title  'score_exams'
+# @author Dimitri Muralt, Christoph Wenk
+# @date   31.08.2018
+# @desc   This script reads in a master file and takes a list of response files.
+#         It then compares the response files against the master file and reports
+#         any missing questions or answers in the response files. The matching allows
+#         for slight changes in the questions or answers and is able match them regardless.
+#         The response files will be scored and the statistics module will be
+#         called in the end.
+#
+#         Call syntax: src/score_exams.pl resources/SampleResponses/[response_file] [response_file] ...
+#                      src/score_exams.pl resources/SampleResponses/*
+#
+#         The script solves part 1b and 2 of the assignment.
+#====================================================================
 use v5.28;
 use strict;
 use warnings;
 use Data::Dumper;
 use experimental 'signatures';
-use List::Util qw< min max >;
-use Statistics::Basic qw< mean mode median >;
 use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '';
@@ -26,7 +40,7 @@ if (@ARGV < 2) {
     say "$0 <master-file> [response-files]";
     exit (1);
 }
-# enable windows * file selection
+# Enable windows * file selection
 my @args = ($^O eq 'MSWin32') ? map { glob } @ARGV : @ARGV;
 my ($master_filename, @student_filenames) = @args;
 
