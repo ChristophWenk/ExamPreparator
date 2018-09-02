@@ -37,7 +37,7 @@ our @EXPORT_OK = qw(createStatistics);
 # Constants
 my $scoreThreshold = 0.5; # Score < 50%
 my $totalAmountOfQuestions = 20; # Max amount of questions
-my $bottomCohortThreshold = 25;
+my $bottomCohortThreshold = 25; # Lowest percentile
 
 # Content lists
 my %studentScores;
@@ -77,10 +77,14 @@ sub createStatistics {
         $studentStatisticsList{$key}[0] = $correctAnswers;
         $studentStatisticsList{$key}[1] = $totalAnswers;
     }
-
     # Calculate percentile and standard deviation
     $stat->add_data(@correctAnswersList);
-    $lowestPercentile = $stat->percentile($bottomCohortThreshold);
+    if ((my $length = @correctAnswersList /$bottomCohortThreshold) >= 1) { # Percentile only makes sense when there are enough people to calculate it.
+        $lowestPercentile = $stat->percentile($bottomCohortThreshold);     # E.g.: 25% Percentile of 3 people does not exit. There need to be at least 4 people.
+    }
+    else {
+        $lowestPercentile = -1;
+    }
     $stdv = $stat->standard_deviation();
 
     doChecks();
@@ -137,12 +141,16 @@ sub doBasicStatistics {
 # Screen Output
 #====================================================================
 sub putOutput {
-
+    say "";
     # print individual score of each student
+    say "#============================================================#";
+    say "# Statistics                                                 #";
+    say "#============================================================#";
+    say "Individual scores:";
     for my $current_score(sort keys %studentScores){
         say "$current_score..................$studentScores{$current_score}[0]/$studentScores{$current_score}[1]";
     }
-
+    say "";
     say "Average number of questions answered:....." . mean(@totalAnswersList);
     say "                             Minimum:....." . min(@totalAnswersList) . "   ($minimalQuestionsAnsweredCount Student(s))";
     say "                             Maximum:....." . max(@totalAnswersList) . "   ($maximumQuestionsAnsweredCount Student(s))";
@@ -163,6 +171,7 @@ sub putOutput {
             say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score > 1σ below mean)";
         }
     }
+
 }
 
 # True statement needed for use-statement (module import/export)
