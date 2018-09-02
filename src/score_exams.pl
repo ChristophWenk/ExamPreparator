@@ -106,8 +106,8 @@ sub get_data_from_file($filename) {
         }
         #add option to current question
         elsif(substr($row,0,1) eq '[' && defined($current_question)) {
-            if ($row =~ m/^(\[\S\])/ ) {
-                $row =~ s/^(\[\S\]) //; #remove brackets before option
+            if ($row =~ m/^(\[ ?\S? ?\])/ ) {
+                $row =~ s/^(\[ ?\S? ?\]) //; #remove brackets before option
                 $current_options{$row} = 1;
             }
             else {
