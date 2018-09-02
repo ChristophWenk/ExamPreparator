@@ -149,45 +149,50 @@ sub putOutput {
     say "#============================================================#";
     say "Individual scores:";
     for my $current_score (sort keys %studentScores){
-        say "$current_score..................$studentScores{$current_score}[0]/$studentScores{$current_score}[1]";
+        say "    $current_score" . formatDots(length($current_score)) . sprintf("%02d",$studentScores{$current_score}[0]) . "/" . sprintf("%02d",$studentScores{$current_score}[1]);
     }
 
     say "";
     say "Average number of questions answered:..... " . sprintf("%.0f",mean(@totalAnswersList));
     $studentString = formatStudents($minimalQuestionsAnsweredCount);
-    say "                             Minimum:..... " . formatCount(min(@totalAnswersList)) . "   ($minimalQuestionsAnsweredCount $studentString)";
+    say "                             Minimum:..... " . sprintf("%2s",min(@totalAnswersList)) . "   ($minimalQuestionsAnsweredCount $studentString)";
     $studentString = formatStudents($maximumQuestionsAnsweredCount);
-    say "                             Maximum:..... " . formatCount(max(@totalAnswersList)) . "   ($maximumQuestionsAnsweredCount $studentString)";
+    say "                             Maximum:..... " . sprintf("%2s",max(@totalAnswersList)) . "   ($maximumQuestionsAnsweredCount $studentString)";
     say "";
 
     say "Average number of correct answers:........ " . sprintf("%.0f",mean(@correctAnswersList));
     $studentString = formatStudents($minimumCorrectlyGivenAnswersCount);
-    say "                          Minimum:........ " . formatCount(min(@correctAnswersList)) . "   ($minimumCorrectlyGivenAnswersCount $studentString)";
+    say "                          Minimum:........ " . sprintf("%2s",min(@correctAnswersList)) . "   ($minimumCorrectlyGivenAnswersCount $studentString)";
     $studentString = formatStudents($maximumCorrectlyGivenAnswersCount);
-    say "                          Maximum:........ " . formatCount(max(@correctAnswersList)) . "   ($maximumCorrectlyGivenAnswersCount $studentString)";
+    say "                          Maximum:........ " . sprintf("%2s",max(@correctAnswersList)) . "   ($maximumCorrectlyGivenAnswersCount $studentString)";
     say "";
 
     say "Results below expectation:";
     for my $key (sort keys %studentStatisticsList) {
         if ($studentStatisticsList{$key}[2] == 1) {
-            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score < 50%)";
+            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score < 50%)";
         }
         elsif ($studentStatisticsList{$key}[3] == 1) {
-            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (bottom 25% of cohort)";
+            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (bottom 25% of cohort)";
         }
         elsif ($studentStatisticsList{$key}[4] == 1) {
-            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score > 1σ below mean)";
+            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score > 1σ below mean)";
         }
     }
-
 }
 
 sub formatStudents($count) {
     if ($count == 1) {return "student";} else {return "students";}
 }
 
-sub formatCount($count) {
-    if ($count < 10) {return " " . $count;} else {return $count;}
+sub formatDots($stringLength) {
+    my $dots = "      ";
+    my $i=0;
+    while ($i < 90-$stringLength) {
+        substr($dots,$i,$i) = ".";
+        $i++;
+    }
+    return $dots;
 }
 
 # True statement needed for use-statement (module import/export)
