@@ -170,13 +170,13 @@ sub putOutput {
     say "Results below expectation:";
     for my $key (sort keys %studentStatisticsList) {
         if ($studentStatisticsList{$key}[2] == 1) {
-            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score < 50%)";
+            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score < 50%)";
         }
         elsif ($studentStatisticsList{$key}[3] == 1) {
-            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (bottom 25% of cohort)";
+            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (bottom 25% of cohort)";
         }
         elsif ($studentStatisticsList{$key}[4] == 1) {
-            say "    $key.....$studentStatisticsList{$key}[0]/$studentStatisticsList{$key}[1]  (score > 1σ below mean)";
+            say "    $key....." . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score > 1σ below mean)";
         }
     }
 
