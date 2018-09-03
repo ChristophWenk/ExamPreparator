@@ -16,6 +16,7 @@ The application consists of two scripts and one module:
 ## Usage
 
 All files must be called from the project root directory. Otherwise the directory paths will not match.
+The output console must support UTF8 to display all characters correctly.
 
 ### create_master_file.pl
 To create a blank master file place the filled out exam master file in the *resources/MasterFiles/* directory.
