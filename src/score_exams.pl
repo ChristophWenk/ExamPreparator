@@ -68,6 +68,12 @@ my %students_scores;              #structure: {student1 => [count_answered_corre
 my %students_answers;             #structure: {student1 => { question1 => answer1, question2 => answer2, .. },
 #                                              student2 => { question1 => answer1, question2 => answer2, .. }
 #                                             }
+my %students_answers_keys;             #structure: {student1 => [ [bool_correctness, question1_option_selected],
+#                                                                 [bool_correctness, question2_option_selected] ],
+#                                                   student2 => [ [bool_correctness, question1_option_selected],
+# #                                                               [bool_correctness, question2_option_selected] ]
+#                                                  }
+#
 #====================================================================
 # Main processing
 #====================================================================
@@ -86,11 +92,14 @@ for my $student_filename (@student_filenames){
     # collect student score count for statistics
     $students_scores{$student_filename} = get_count_answered(@student_answers_keys);
     # collect student answers for misconduct check
-    #$students_answers{$student_filename} = {%student_answers};
+    $students_answers_keys{$student_filename} = [ @student_answers_keys ];
 }
 
 # Call statistics module
  createStatistics(%students_scores);
+
+ detect_misconduct (%students_answers_keys);
+
 
 #====================================================================
 # Subroutine Definitions
@@ -203,8 +212,6 @@ sub get_answers(%questions){
 }
 
 sub check_answers(%current_student_answers){
-    #my $count_answered = 0;
-    #my $count_answered_correct = 0;
 
     my @current_student_answers_keys;
 
@@ -214,21 +221,18 @@ sub check_answers(%current_student_answers){
         if(defined($current_student_answers{$current_question})
                 && $master_answers{$current_question} eq $current_student_answers{$current_question})
         {
-            #$count_answered++;
-            #$count_answered_correct++;
-            push @current_student_answers_keys, [$current_student_answers{$current_question}, 1];
+            push @current_student_answers_keys, [1, $current_student_answers{$current_question}];
         }
         # student answer mismatches master answer
         elsif(defined($current_student_answers{$current_question})){
-            #$count_answered++;
-            push @current_student_answers_keys, [$current_student_answers{$current_question}, 0];
+            push @current_student_answers_keys, [0, $current_student_answers{$current_question}];
         }
         #student answer not filled out correctly
         else{
-            push @current_student_answers_keys, [undef, 0];
+            push @current_student_answers_keys, [0, undef];
         }
     }
-    return (@current_student_answers_keys);
+    return @current_student_answers_keys;
 }
 
 sub get_count_answered(@current_student_answers_keys){
@@ -236,11 +240,11 @@ sub get_count_answered(@current_student_answers_keys){
     my $count_answered_correct = 0;
 
     for my $i ( 0 .. $#current_student_answers_keys ) {
-        if(defined($current_student_answers_keys[$i]->[0])){
+        if($current_student_answers_keys[$i]->[0]){
+            $count_answered_correct++;
+        }
+        if($current_student_answers_keys[$i]->[1]){
             $count_answered++;
-            if($current_student_answers_keys[$i]->[1]){
-                $count_answered_correct++;
-            }
         }
     }
     return [$count_answered_correct, $count_answered];
@@ -279,7 +283,17 @@ sub normalize_string($string){
 }
 
 
-sub detect_misconduct (%master_answers){
+sub detect_misconduct (%students_answers_keys){
 
+    for my $current_student (keys %students_answers_keys){
+
+        for my $i (0 .. @{$students_answers_keys{$current_student}}) {
+            if(defined($students_answers_keys{$current_student}->[$i][0])){
+               # say $students_answers_keys{$current_student}->[$i][0];
+               # say $students_answers_keys{$current_student}->[$i][1];
+            }
+
+        };
+    };
 
 }
