@@ -13,7 +13,6 @@ The application consists of two scripts and one module:
 **statistics.pm** takes a hash with students score results as input and writes several statistics for each file and the consolidated data. It then formats the data for output and presents the data to the user. This module can only be called with the score_exams.pl script.
 
 
-
 ## Usage
 
 All files must be called from the project root directory. Otherwise the directory paths will not match.
@@ -21,7 +20,7 @@ All files must be called from the project root directory. Otherwise the director
 ### create_master_file.pl
 To create a blank master file place the filled out exam master file in the *resources/MasterFiles/* directory.
 
-Call syntax: *perl bin/createMasterFile <masterFile>*
+Call syntax: *perl bin/create_master_file \<master_file>*
 
 The generated master file be written to *out/[timestamp]-[input_file_name]*
 
@@ -29,12 +28,12 @@ The generated master file be written to *out/[timestamp]-[input_file_name]*
 To analyze the response files place them in the *resources/Responses/* directory.
 
 **Process a single file**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/[response_file]
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file>
 
-**Process a multiple files**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/[response_file] [response_file] [...]*
+**Process multiple files**
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file> [response_file] [...]*
 
 **Process all files**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\**
 
 The output will be presented in the console.
