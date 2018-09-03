@@ -33,6 +33,8 @@ use Text::Levenshtein qw(distance);
 #usage
 #perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
 #perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431
+#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431 resources/Responses/20170828-092520-FHNW_entrance_exam-ID014664
+
 
 # check console input
 if (@ARGV < 2) {
@@ -229,7 +231,7 @@ sub check_answers(%current_student_answers){
         }
         #student answer not filled out correctly
         else{
-            push @current_student_answers_keys, [0, undef];
+            push @current_student_answers_keys, [0, ''];
         }
     }
     return @current_student_answers_keys;
@@ -240,9 +242,11 @@ sub get_count_answered(@current_student_answers_keys){
     my $count_answered_correct = 0;
 
     for my $i ( 0 .. $#current_student_answers_keys ) {
+        #answer filled out correctly
         if($current_student_answers_keys[$i]->[0]){
             $count_answered_correct++;
         }
+        #answer filled out
         if($current_student_answers_keys[$i]->[1]){
             $count_answered++;
         }
@@ -284,15 +288,56 @@ sub normalize_string($string){
 
 
 sub detect_misconduct (%students_answers_keys){
+    my @suspicious_students;
+    my $count_questions_in_test = scalar(@{$students_answers_keys{(keys %students_answers_keys)[0]}});
 
-    for my $current_student (keys %students_answers_keys){
+    #collect students with 5 or more errors in @students array
+    for my $current_student (sort keys %students_answers_keys){
+        my $error_count = 0;
+        # go through answers and count errors
+        for my $i (0 .. $count_questions_in_test - 1) {
+            # if error
+            if(!$students_answers_keys{$current_student}->[$i][0]){
+                $error_count++;
+                if($error_count >= 5) {
+                    push @suspicious_students, $current_student;
+                    last; # at least 5 errors, save student and continue with next student
+                };
+            };
+        };
+    };
 
-        for my $i (0 .. @{$students_answers_keys{$current_student}}) {
-            if(defined($students_answers_keys{$current_student}->[$i][0])){
-               # say $students_answers_keys{$current_student}->[$i][0];
-               # say $students_answers_keys{$current_student}->[$i][1];
+    # compare each student with 5 or more errors to all other students
+    #        1) compare student_1        with (student_2..last)
+    #        2) compare student_2        with (student_3..last)
+    #        ...
+    #     last) comapre student_prelast  with student_last
+
+    # iterate through all students
+    # "@students - 1" because in the last step the student_prelast is compared to the others
+    for (my $student_index = 0; $student_index < @suspicious_students - 1; $student_index++){ # "@students - 1" because
+        #say "guilty ". @students[$student_index];
+        # compare current_student to other students
+        for (my $compare_student_index = 1; $compare_student_index < @suspicious_students - 1; $compare_student_index++) {
+            my $count_same_correct_answers = 0;
+            my $count_same_wrong_answers = 0;
+            for my $i (0 .. $count_questions_in_test - 1) {
+                if( $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 1
+                 && $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 1)
+                {
+                    $count_same_correct_answers++;
+                }
+                elsif(  $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 0  # both wrong
+                    &&  $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 0
+                    &&      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1]   # both same
+                        eq  $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][1]
+                    &&  $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1] ne  '')# both not null
+                {
+                    $count_same_wrong_answers++;
+                }
             }
-
+            say "    $suspicious_students[$student_index]";
+            say "and $suspicious_students[$compare_student_index]  ........same correct: $count_same_correct_answers / $count_same_wrong_answers";
         };
     };
 
