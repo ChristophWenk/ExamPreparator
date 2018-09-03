@@ -13,7 +13,7 @@
 #         Call syntax: src/score_exams.pl resources/SampleResponses/[response_file] [response_file] ...
 #                      src/score_exams.pl resources/SampleResponses/*
 #
-#         The script solves part 1b and 2 of the assignment.
+#         The script solves part 1b, 2, 4 of the assignment.
 #====================================================================
 use v5.28;
 use strict;
@@ -60,9 +60,11 @@ my (%master_questions, %student_questions);  # structure:
 #
 #                                                 }
 my (%master_answers, %student_answers);     # structure:   { question1 => answer1, question2 => answer2 }
-my @student_score;                #structure: [count_correct, count_answered]
-my %students_scores;              #structure: {student1 => [count_correct, count_answered],
-#                                              student2 => [count_correct, count_answered] }
+my @student_answers_keys;                   # structure:   [ [question1_option_selected, bool_correctness],
+#                                                            [question2_option_selected, bool_correctness]
+#                                                          ]
+my %students_scores;              #structure: {student1 => [count_answered_correct, count_answered],
+#                                              student2 => [count_answered_correct, count_answered] }
 my %students_answers;             #structure: {student1 => { question1 => answer1, question2 => answer2, .. },
 #                                              student2 => { question1 => answer1, question2 => answer2, .. }
 #                                             }
@@ -78,16 +80,17 @@ for my $student_filename (@student_filenames){
     %student_questions = get_data_from_file($student_filename);
     %student_questions = sanitize_student_data($student_filename, %student_questions);
     %student_answers   = get_answers(%student_questions);
-    @student_score     = check_answers(%student_answers);
 
-    # collect student score for statistics
-    $students_scores{$student_filename} = [ @student_score ];
+    @student_answers_keys     = check_answers(%student_answers);
+
+    # collect student score count for statistics
+    $students_scores{$student_filename} = get_count_answered(@student_answers_keys);
     # collect student answers for misconduct check
-    $students_answers{$student_filename} = {%student_answers};
+    #$students_answers{$student_filename} = {%student_answers};
 }
 
 # Call statistics module
-createStatistics(%students_scores);
+ createStatistics(%students_scores);
 
 #====================================================================
 # Subroutine Definitions
@@ -200,24 +203,47 @@ sub get_answers(%questions){
 }
 
 sub check_answers(%current_student_answers){
-    my $answered = 0;
-    my $answered_correct = 0;
+    #my $count_answered = 0;
+    #my $count_answered_correct = 0;
 
-    # go through all master answers and compare with current student answers
-    for my $current_question (keys %master_answers){
+    my @current_student_answers_keys;
+
+    # go through all master answers alphabetically and compare with current student answers
+    for my $current_question (sort keys %master_answers){
         # student answer matches master answer
         if(defined($current_student_answers{$current_question})
-                &&     $master_answers{$current_question}
-                    eq $current_student_answers{$current_question}) {
-            $answered++;
-            $answered_correct++;
+                && $master_answers{$current_question} eq $current_student_answers{$current_question})
+        {
+            #$count_answered++;
+            #$count_answered_correct++;
+            push @current_student_answers_keys, [$current_student_answers{$current_question}, 1];
         }
         # student answer mismatches master answer
         elsif(defined($current_student_answers{$current_question})){
-            $answered++;
+            #$count_answered++;
+            push @current_student_answers_keys, [$current_student_answers{$current_question}, 0];
+        }
+        #student answer not filled out correctly
+        else{
+            push @current_student_answers_keys, [undef, 0];
         }
     }
-    return ($answered_correct,$answered);
+    return (@current_student_answers_keys);
+}
+
+sub get_count_answered(@current_student_answers_keys){
+    my $count_answered = 0;
+    my $count_answered_correct = 0;
+
+    for my $i ( 0 .. $#current_student_answers_keys ) {
+        if(defined($current_student_answers_keys[$i]->[0])){
+            $count_answered++;
+            if($current_student_answers_keys[$i]->[1]){
+                $count_answered_correct++;
+            }
+        }
+    }
+    return [$count_answered_correct, $count_answered];
 }
 
 sub lookup_similar_string($string_to_find, @library) {
@@ -250,4 +276,10 @@ sub normalize_string($string){
     $string = lc($string);               # to lower case
 
     return $string;
+}
+
+
+sub detect_misconduct (%master_answers){
+
+
 }
