@@ -22,7 +22,7 @@ To create a blank master file place the filled out exam master file in the *reso
 
 Call syntax: *perl bin/create_master_file \<master_file>*
 
-The generated master file be written to *out/[timestamp]-[input_file_name]*
+The generated master file be written to *out/{timestamp}-{input_file_name}*
 
 ### score_exams.pl
 To analyze the response files place them in the *resources/Responses/* directory.
