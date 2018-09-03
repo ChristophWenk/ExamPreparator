@@ -288,6 +288,10 @@ sub normalize_string($string){
 
 
 sub detect_misconduct (%students_answers_keys){
+    say "#============================================================#";
+    say "# Possible Misconduct                                        #";
+    say "#============================================================#";
+
     my @suspicious_students;
     my $count_questions_in_test = scalar(@{$students_answers_keys{(keys %students_answers_keys)[0]}});
 
@@ -317,8 +321,8 @@ sub detect_misconduct (%students_answers_keys){
     # "@students - 1" because in the last step the student_prelast is compared to the others
     for (my $student_index = 0; $student_index < @suspicious_students - 1; $student_index++){ # "@students - 1" because
         #say "guilty ". @students[$student_index];
-        # compare current_student to other students
-        for (my $compare_student_index = 1; $compare_student_index < @suspicious_students - 1; $compare_student_index++) {
+        # compare current_student to all subsequent students
+        for (my $compare_student_index = $student_index+1; $compare_student_index < @suspicious_students - 1; $compare_student_index++) {
             my $count_same_correct_answers = 0;
             my $count_same_wrong_answers = 0;
             for my $i (0 .. $count_questions_in_test - 1) {
@@ -336,9 +340,17 @@ sub detect_misconduct (%students_answers_keys){
                     $count_same_wrong_answers++;
                 }
             }
-            say "    $suspicious_students[$student_index]";
-            say "and $suspicious_students[$compare_student_index]  ........same correct: $count_same_correct_answers / $count_same_wrong_answers";
+
+            if($count_same_wrong_answers >= 4){
+                my $probability =   1 -                                                              # 1 ist max probability
+                                    0.25**$count_same_wrong_answers                                  # wrong answers in power
+                                        * ($count_questions_in_test / $count_same_correct_answers)   # ratio question total and correct answers
+                                        * 100;                                                       # visual correction
+
+                say "    " . $suspicious_students[$student_index].        "............. probability:  ". sprintf("%.2f", $probability)
+                    ."  (same correct/wrong: ". $count_same_correct_answers."/". $count_same_wrong_answers.")";
+                say "and " . $suspicious_students[$compare_student_index];
+            }
         };
     };
-
 }
