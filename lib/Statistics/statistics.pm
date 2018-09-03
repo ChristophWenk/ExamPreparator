@@ -28,21 +28,21 @@ use Exporter qw(import);
 use utf8;
 use open ':std', ':encoding(UTF-8)';
 
-our @EXPORT_OK = qw(createStatistics);
+our @EXPORT_OK = qw(create_statistics);
 
 #====================================================================
 # Definitions
 #====================================================================
 # Constants
-my $scoreThreshold = 0.5; # Score < 50%
-my $totalAmountOfQuestions = 20; # Max amount of questions
-my $bottomCohortThreshold = 25; # Lowest percentile
+my $score_threshold = 0.5; # Score < 50%
+my $total_amount_of_questions = 20; # Max amount of questions
+my $bottom_cohort_threshold = 25; # Lowest percentile
 
 # Content lists
-my %studentScores;
-my @correctAnswersList;
-my @totalAnswersList;
-my %studentStatisticsList; # Structure: (StudentFile => [
+my %student_scores;
+my @correct_answers_list;
+my @total_answers_list;
+my %student_statistics_list; # Structure: (StudentFile => [
 #                                                           CorrectAnswers,
 #                                                           TotalAnswersGiven,
 #                                                           ScoreBelowThresholdFlag,
@@ -53,141 +53,141 @@ my %studentStatisticsList; # Structure: (StudentFile => [
 
 # Variables
 my $stat = Statistics::Descriptive::Full->new();
-my $lowestPercentile;
+my $lowest_percentile;
 my $stdv;
-my $minimalQuestionsAnsweredCount;
-my $maximumQuestionsAnsweredCount;
-my $minimumCorrectlyGivenAnswersCount;
-my $maximumCorrectlyGivenAnswersCount;
-my $studentString;
+my $minimal_questions_answered_count;
+my $maximum_questions_answered_count;
+my $minimum_correctly_given_answers_count;
+my $maximum_correctly_given_answers_count;
+my $student_string;
 
 #====================================================================
 # Main Processing
 #====================================================================
-sub createStatistics {
-    %studentScores = @_;
+sub create_statistics {
+    %student_scores = @_;
     # Create statistic arrays
-    for my $key (sort keys %studentScores) {
-        my $correctAnswers = $studentScores{$key}[0];
-        my $totalAnswers = $studentScores{$key}[1];
+    for my $key (sort keys %student_scores) {
+        my $correct_answers = $student_scores{$key}[0];
+        my $total_answers = $student_scores{$key}[1];
 
-        push @correctAnswersList, $correctAnswers; # Collect the amount of correct answers given by the student
-        push @totalAnswersList, $totalAnswers; # Collect the total amount of answers given by the student
+        push @correct_answers_list, $correct_answers; # Collect the amount of correct answers given by the student
+        push @total_answers_list, $total_answers; # Collect the total amount of answers given by the student
 
-        $studentStatisticsList{$key}[0] = $correctAnswers;
-        $studentStatisticsList{$key}[1] = $totalAnswers;
+        $student_statistics_list{$key}[0] = $correct_answers;
+        $student_statistics_list{$key}[1] = $total_answers;
     }
     # Calculate percentile and standard deviation
-    $stat->add_data(@correctAnswersList);
-    if ((my $length = @correctAnswersList /$bottomCohortThreshold) >= 1) { # Percentile only makes sense when there are enough people to calculate it.
-        $lowestPercentile = $stat->percentile($bottomCohortThreshold);     # E.g.: 25% Percentile of 3 people does not exit. There need to be at least 4 people.
+    $stat->add_data(@correct_answers_list);
+    if ((my $length = @correct_answers_list /$bottom_cohort_threshold) >= 1) { # Percentile only makes sense when there are enough people to calculate it.
+        $lowest_percentile = $stat->percentile($bottom_cohort_threshold);     # E.g.: 25% Percentile of 3 people does not exit. There need to be at least 4 people.
     }
     else {
-        $lowestPercentile = -1;
+        $lowest_percentile = -1;
     }
     $stdv = $stat->standard_deviation();
 
-    doChecks();
-    doBasicStatistics();
-    putOutput();
+    do_checks();
+    do_basic_statistics();
+    put_output();
 }
 
 #====================================================================
 # Subroutine Definitions
 #====================================================================
-sub doChecks {
-    for my $key (sort keys %studentScores) {
+sub do_checks {
+    for my $key (sort keys %student_scores) {
         # Check if student is under the specified threshold
-        if (($studentScores{$key}[0] / $totalAmountOfQuestions) < $scoreThreshold) {
-            $studentStatisticsList{$key}[2] = 1;
+        if (($student_scores{$key}[0] / $total_amount_of_questions) < $score_threshold) {
+            $student_statistics_list{$key}[2] = 1;
         }
         else {
-            $studentStatisticsList{$key}[2] = 0;
+            $student_statistics_list{$key}[2] = 0;
         }
 
         # Check if student belongs to lowest percentile
-        if ($studentScores{$key}[0] <= $lowestPercentile) {
-            $studentStatisticsList{$key}[3] = 1;
+        if ($student_scores{$key}[0] <= $lowest_percentile) {
+            $student_statistics_list{$key}[3] = 1;
         }
         else {
-            $studentStatisticsList{$key}[3] = 0;
+            $student_statistics_list{$key}[3] = 0;
         }
 
         # Check if student's score is > 1 stdv below mean
-        if ($studentScores{$key}[0] < mean(@correctAnswersList)) {
-            $studentStatisticsList{$key}[4] = 1;
+        if ($student_scores{$key}[0] < mean(@correct_answers_list)) {
+            $student_statistics_list{$key}[4] = 1;
         }
         else {
-            $studentStatisticsList{$key}[4] = 0;
+            $student_statistics_list{$key}[4] = 0;
         }
     }
 }
 
-sub doBasicStatistics {
+sub do_basic_statistics {
     # Get amount of students with minimum amount of questions answered
-    $minimalQuestionsAnsweredCount = grep {$_ == min(@totalAnswersList)} @totalAnswersList;
+    $minimal_questions_answered_count = grep {$_ == min(@total_answers_list)} @total_answers_list;
 
     # Get amount of students with maximum amount of questions answered
-    $maximumQuestionsAnsweredCount = grep {$_ == max(@totalAnswersList)} @totalAnswersList;
+    $maximum_questions_answered_count = grep {$_ == max(@total_answers_list)} @total_answers_list;
 
     # Get amount of students with minimum of correctly given answers
-    $minimumCorrectlyGivenAnswersCount = grep {$_ == min(@correctAnswersList)} @correctAnswersList;
+    $minimum_correctly_given_answers_count = grep {$_ == min(@correct_answers_list)} @correct_answers_list;
 
     # Get amount of students with maximum of correctly given answers
-    $maximumCorrectlyGivenAnswersCount = grep {$_ == max(@correctAnswersList)} @correctAnswersList;
+    $maximum_correctly_given_answers_count = grep {$_ == max(@correct_answers_list)} @correct_answers_list;
 }
 
 #====================================================================
 # Screen Output Subroutines
 #====================================================================
-sub putOutput {
+sub put_output {
     say "";
     # print individual score of each student
     say "#============================================================#";
     say "# Statistics                                                 #";
     say "#============================================================#";
     say "Individual scores:";
-    for my $current_score (sort keys %studentScores){
-        say "    $current_score" . formatDots(length($current_score)) . sprintf("%02d",$studentScores{$current_score}[0]) . "/" . sprintf("%02d",$studentScores{$current_score}[1]);
+    for my $current_score (sort keys %student_scores){
+        say "    $current_score" . format_dots(length($current_score)) . sprintf("%02d",$student_scores{$current_score}[0]) . "/" . sprintf("%02d",$student_scores{$current_score}[1]);
     }
 
     say "";
-    say "Average number of questions answered:..... " . sprintf("%.0f",mean(@totalAnswersList));
-    $studentString = formatStudents($minimalQuestionsAnsweredCount);
-    say "                             Minimum:..... " . sprintf("%2s",min(@totalAnswersList)) . "   ($minimalQuestionsAnsweredCount $studentString)";
-    $studentString = formatStudents($maximumQuestionsAnsweredCount);
-    say "                             Maximum:..... " . sprintf("%2s",max(@totalAnswersList)) . "   ($maximumQuestionsAnsweredCount $studentString)";
+    say "Average number of questions answered:..... " . sprintf("%.0f",mean(@total_answers_list));
+    $student_string = format_students($minimal_questions_answered_count);
+    say "                             Minimum:..... " . sprintf("%2s",min(@total_answers_list)) . "   ($minimal_questions_answered_count $student_string)";
+    $student_string = format_students($maximum_questions_answered_count);
+    say "                             Maximum:..... " . sprintf("%2s",max(@total_answers_list)) . "   ($maximum_questions_answered_count $student_string)";
     say "";
 
-    say "Average number of correct answers:........ " . sprintf("%.0f",mean(@correctAnswersList));
-    $studentString = formatStudents($minimumCorrectlyGivenAnswersCount);
-    say "                          Minimum:........ " . sprintf("%2s",min(@correctAnswersList)) . "   ($minimumCorrectlyGivenAnswersCount $studentString)";
-    $studentString = formatStudents($maximumCorrectlyGivenAnswersCount);
-    say "                          Maximum:........ " . sprintf("%2s",max(@correctAnswersList)) . "   ($maximumCorrectlyGivenAnswersCount $studentString)";
+    say "Average number of correct answers:........ " . sprintf("%.0f",mean(@correct_answers_list));
+    $student_string = format_students($minimum_correctly_given_answers_count);
+    say "                          Minimum:........ " . sprintf("%2s",min(@correct_answers_list)) . "   ($minimum_correctly_given_answers_count $student_string)";
+    $student_string = format_students($maximum_correctly_given_answers_count);
+    say "                          Maximum:........ " . sprintf("%2s",max(@correct_answers_list)) . "   ($maximum_correctly_given_answers_count $student_string)";
     say "";
 
     say "Results below expectation:";
-    for my $key (sort keys %studentStatisticsList) {
-        if ($studentStatisticsList{$key}[2] == 1) {
-            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score < 50%)";
+    for my $key (sort keys %student_statistics_list) {
+        if ($student_statistics_list{$key}[2] == 1) {
+            say "    $key" . format_dots(length($key)) . sprintf("%02d",$student_statistics_list{$key}[0]) . "/" . sprintf("%02d",$student_statistics_list{$key}[1]) . "  (score < 50%)";
         }
-        elsif ($studentStatisticsList{$key}[3] == 1) {
-            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (bottom 25% of cohort)";
+        elsif ($student_statistics_list{$key}[3] == 1) {
+            say "    $key" . format_dots(length($key)) . sprintf("%02d",$student_statistics_list{$key}[0]) . "/" . sprintf("%02d",$student_statistics_list{$key}[1]) . "  (bottom 25% of cohort)";
         }
-        elsif ($studentStatisticsList{$key}[4] == 1) {
-            say "    $key" . formatDots(length($key)) . sprintf("%02d",$studentStatisticsList{$key}[0]) . "/" . sprintf("%02d",$studentStatisticsList{$key}[1]) . "  (score > 1σ below mean)";
+        elsif ($student_statistics_list{$key}[4] == 1) {
+            say "    $key" . format_dots(length($key)) . sprintf("%02d",$student_statistics_list{$key}[0]) . "/" . sprintf("%02d",$student_statistics_list{$key}[1]) . "  (score > 1σ below mean)";
         }
     }
 }
 
-sub formatStudents($count) {
+sub format_students($count) {
     if ($count == 1) {return "student";} else {return "students";}
 }
 
-sub formatDots($stringLength) {
+sub format_dots($string_length) {
     my $dots = "      ";
     my $i=0;
-    while ($i < 90-$stringLength) {
+    while ($i < 90-$string_length) {
         substr($dots,$i,$i) = ".";
         $i++;
     }

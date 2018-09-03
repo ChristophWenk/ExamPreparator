@@ -90,7 +90,7 @@ for my $student_filename (@student_filenames){
 }
 
 # Call statistics module
- createStatistics(%students_scores);
+ create_statistics(%students_scores);
 
 #====================================================================
 # Subroutine Definitions
