@@ -10,7 +10,7 @@
 #         randomizes the order of the answers and writes the output
 #         to an output file located in 'out'.
 #
-#         Call syntax: createMasterFile [masterFile]
+#         Call syntax: createMasterFile <masterFile>
 #
 #         The script solves part 1a of the assignment.
 #====================================================================
@@ -26,6 +26,12 @@ use File::Path qw( make_path );
 #====================================================================
 # Preprocessing
 #====================================================================
+if (@ARGV < 1) {
+    say "Missing parameters. Usage:";
+    say "$0 <master-file> ";
+    exit (1);
+}
+
 # Get current local timestamp
 my $timestamp      = strftime "%Y%m%d-%H%M%S", localtime(time);
 
@@ -33,28 +39,29 @@ my $timestamp      = strftime "%Y%m%d-%H%M%S", localtime(time);
 #====================================================================
 # File definitions
 #====================================================================
-my ($inputFileName)  = @ARGV;
+
+my ($input_file_name)  = @ARGV;
 # Only for testing purposes
 #my $inputFileName  = "short_exam_master_file.txt";
 
-my $inputFilePath  = "../resources/MasterFiles/".$inputFileName;
-my $outputFileName = qq($timestamp-$inputFileName);
-my $outputFilePath = "../out/".$outputFileName;
+my $input_file_path  = "resources/MasterFiles/".$input_file_name;
+my $output_file_name = qq($timestamp-$input_file_name);
+my $output_file_path = "out/".$output_file_name;
 
 # Create output path if it not exists
 if ( !-d "../out/" ) {
     make_path "../out/" or die "Failed to create path: out/";
 }
 
-open(my $inputFileHandle,  "<", $inputFilePath)  or die "Could not open input file.";
-open(my $outputFileHandle, ">", $outputFilePath) or die "Could not open output file.";
+open(my $input_file_handle,  "<", $input_file_path)  or die "Could not open input file.";
+open(my $output_file_handle, ">", $output_file_path) or die "Could not open output file.";
 
 
 #====================================================================
 # Main processing
 #====================================================================
-while (!eof $inputFileHandle) {
-    my $nextline = readline($inputFileHandle);
+while (!eof $input_file_handle) {
+    my $nextline = readline($input_file_handle);
     chomp($nextline);
 
     my @questions;
@@ -67,23 +74,23 @@ while (!eof $inputFileHandle) {
         else {
             push @questions, $nextline;
         }
-        $nextline = readline($inputFileHandle);
+        $nextline = readline($input_file_handle);
         chomp($nextline);
     }
 
     if ((my $nrOfQuestions = @questions) > 0) {
-        my @shuffledQuestions = shuffle @questions;
+        my @shuffled_questions = shuffle @questions;
 
-        for my $question (@shuffledQuestions) {
-            say {$outputFileHandle} $question;
+        for my $question (@shuffled_questions) {
+            say {$output_file_handle} $question;
         }
     }
-    say {$outputFileHandle} $nextline;
+    say {$output_file_handle} $nextline;
 }
 
 #====================================================================
 # Exit program
 #====================================================================
-close($inputFileHandle) or die "Could not close input file.";
-close($outputFileHandle) or die "Could not close output file.";
+close($input_file_handle) or die "Could not close input file.";
+close($output_file_handle) or die "Could not close output file.";
 exit(0);

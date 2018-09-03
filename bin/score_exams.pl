@@ -10,8 +10,8 @@
 #         The response files will be scored and the statistics module will be
 #         called in the end.
 #
-#         Call syntax: src/score_exams.pl resources/SampleResponses/[response_file] [response_file] ...
-#                      src/score_exams.pl resources/SampleResponses/*
+#         Call syntax: bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/[response_file]
+#                      bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
 #
 #         The script solves part 1b, 2, 4 of the assignment.
 #====================================================================
@@ -22,8 +22,8 @@ use Data::Dumper;
 use experimental 'signatures';
 use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
-use lib dirname(dirname abs_path $0) . '';
-use src::statistics qw(createStatistics);
+use lib dirname(dirname abs_path $0) . '/lib';
+use Statistics::statistics qw(createStatistics);
 use Text::Levenshtein qw(distance);
 
 #====================================================================
@@ -31,8 +31,8 @@ use Text::Levenshtein qw(distance);
 #====================================================================
 
 #usage
-#perl src/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/*
-#perl src/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/SampleResponses/20170828-092520-FHNW_entrance_exam-ID006431
+#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
+#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431
 
 # check console input
 if (@ARGV < 2) {
