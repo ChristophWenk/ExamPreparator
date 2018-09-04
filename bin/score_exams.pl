@@ -116,15 +116,13 @@ sub get_data_from_file($filename) {
     my %current_options;
     #process file row by row
     while (my $row = readline($filehandle)) {
-        #####################################
-        #todo: remove trim and adjust if regex
-        #####################################
         $row =~ s/^\s+|\s+$//g;           # trim
         # if row starts with a number > its a question
         if(substr($row,0,1) =~ /^\d/) {
+            $row =~ s/^\d+.\s?//g; #remove brackets before option
             $current_question = $row;
         }
-        #if row starts with a "_" try to save a question with all options
+        #if row starts with a "_" or "=" try to save a question with all options
         elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')
                 &&
                 defined($current_question)){
