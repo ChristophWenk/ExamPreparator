@@ -30,12 +30,6 @@ use Text::Levenshtein qw(distance);
 # Score Exams
 #====================================================================
 
-#usage
-#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
-#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431
-#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431 resources/Responses/20170828-092520-FHNW_entrance_exam-ID014664
-
-
 # check console input
 if (@ARGV < 2) {
     say "Missing parameters. Usage:";
@@ -67,9 +61,6 @@ my @student_answers_keys;                   # structure:   [ [question1_option_s
 #                                                          ]
 my %students_scores;              #structure: {student1 => [count_answered_correct, count_answered],
 #                                              student2 => [count_answered_correct, count_answered] }
-my %students_answers;             #structure: {student1 => { question1 => answer1, question2 => answer2, .. },
-#                                              student2 => { question1 => answer1, question2 => answer2, .. }
-#                                             }
 my %students_answers_keys;             #structure: {student1 => [ [bool_correctness, question1_option_selected],
 #                                                                 [bool_correctness, question2_option_selected] ],
 #                                                   student2 => [ [bool_correctness, question1_option_selected],
@@ -85,21 +76,20 @@ my %students_answers_keys;             #structure: {student1 => [ [bool_correctn
 
 # get data for each student
 for my $student_filename (@student_filenames){
-    %student_questions = get_data_from_file($student_filename);
-    %student_questions = sanitize_student_data($student_filename, %student_questions);
-    %student_answers   = get_answers(%student_questions);
-
+    %student_questions        = get_data_from_file($student_filename);
+    %student_questions        = sanitize_student_data($student_filename, %student_questions);
+    %student_answers          = get_answers(%student_questions);
     @student_answers_keys     = check_answers(%student_answers);
 
     # collect student score count for statistics
-    $students_scores{$student_filename} = get_count_answered(@student_answers_keys);
+    $students_scores{$student_filename}       = get_count_answered(@student_answers_keys);
     # collect student answers for misconduct check
     $students_answers_keys{$student_filename} = [ @student_answers_keys ];
 }
 
 # Call statistics module
  create_statistics(%students_scores);
-
+# Call misconduct subroutine
  detect_misconduct (%students_answers_keys);
 
 
@@ -148,7 +138,7 @@ sub get_data_from_file($filename) {
 sub sanitize_student_data($current_student_filename, %student_questions){
 
     say "... checking $current_student_filename";
-    # go through all master question and check if they are present in students file
+    # go through all master questions and check if they are present in students file
     for my $current_master_question (keys %master_questions)
     {
         # missing question
@@ -188,20 +178,52 @@ sub sanitize_student_data($current_student_filename, %student_questions){
     return %student_questions;
 }
 
-sub get_answers(%questions){
+sub lookup_similar_string($string_to_find, @library) {
+
+    my $normalized_string_to_find = normalize_string($string_to_find);
+
+    # go through all string in array and find first similar
+    for my $current_string (@library) {
+        my $normalized_current_string = normalize_string($current_string);
+
+        #calculate Levenshtein distance
+        my $distance = distance($normalized_current_string, $normalized_string_to_find);
+
+        #if distance is less then 10% of string length > string similar
+        if ($distance*10 < (length($normalized_string_to_find))) {
+            return $current_string;
+        }
+    }
+    return '';
+}
+
+sub normalize_string($string){
+
+    # stopwords to be removed from string
+    my $stopwords = 'the|a|an|of|on|in|by|at|is|\'s|are|that|they|for|to|it';
+
+    $string =~ s/\b(?:$stopwords)\b//g;  # remove stop words;
+    $string =~ s/^\s+|\s+$//g;           # trim
+    $string =~ s/\s{2,}/ /g;             # replace multiple spaces with one space;
+    $string = lc($string);               # to lower case
+
+    return $string;
+}
+
+sub get_answers(%questions_with_selected_options){
     my %answers;
     # go through all questions and save the selected option in %answers
-    for my $current_question (keys %questions) {
+    for my $current_question (keys %questions_with_selected_options) {
         $answers{$current_question} = undef;
         # go through all options
-        for my $current_option ( keys %{ $questions{$current_question} } ) {
+        for my $current_option ( keys %{ $questions_with_selected_options{$current_question} } ) {
             #option selected > save as answer
-            if( $questions{$current_question}{$current_option}
+            if( $questions_with_selected_options{$current_question}{$current_option}
                 && !defined($answers{$current_question})){
                 $answers{$current_question} = $current_option;
             }
             #more than one option selected > answer not valid
-            elsif( $questions{$current_question}{$current_option}
+            elsif( $questions_with_selected_options{$current_question}{$current_option}
                 && defined($answers{$current_question})){
                 $answers{$current_question} = undef;
                 last; # duplicate selection, other options are ignored
@@ -251,39 +273,6 @@ sub get_count_answered(@current_student_answers_keys){
     }
     return [$count_answered_correct, $count_answered];
 }
-
-sub lookup_similar_string($string_to_find, @library) {
-
-    my $normalized_string_to_find = normalize_string($string_to_find);
-
-    # go through all string in array and find first similar
-    for my $current_string (@library) {
-        my $normalized_current_string = normalize_string($current_string);
-
-        #calculate Levenshtein distance
-        my $distance = distance($normalized_current_string, $normalized_string_to_find);
-
-        #if distance is less then 10% of string length > string similar
-        if ($distance*10 < (length($normalized_string_to_find))) {
-            return $current_string;
-        }
-    }
-    return '';
-}
-
-sub normalize_string($string){
-
-    # stopwords to be removed from string
-    my $stopwords = 'the|a|an|of|on|in|by|at|is|\'s|are|that|they|for|to|it';
-
-    $string =~ s/\b(?:$stopwords)\b//g;  # remove stop words;
-    $string =~ s/^\s+|\s+$//g;           # trim
-    $string =~ s/\s{2,}/ /g;             # replace multiple spaces with one space;
-    $string = lc($string);               # to lower case
-
-    return $string;
-}
-
 
 sub detect_misconduct (%students_answers_keys){
     say "#============================================================#";
