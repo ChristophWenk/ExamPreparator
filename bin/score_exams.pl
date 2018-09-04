@@ -292,31 +292,16 @@ sub detect_misconduct (%students_answers_keys){
     say "# Possible Misconduct                                        #";
     say "#============================================================#";
 
-    my @suspicious_students;
+    my @suspicious_students = get_students_with_errors_more_then(5);
     my $count_questions_in_test = scalar(@{$students_answers_keys{(keys %students_answers_keys)[0]}});
 
-    #collect students with 5 or more errors in @students array
-    for my $current_student (sort keys %students_answers_keys){
-        my $error_count = 0;
-        # go through answers and count errors
-        for my $i (0 .. $count_questions_in_test - 1) {
-            # if error
-            if(!$students_answers_keys{$current_student}->[$i][0]){
-                $error_count++;
-                if($error_count >= 5) {
-                    push @suspicious_students, $current_student;
-                    last; # at least 5 errors, save student and continue with next student
-                };
-            };
-        };
-    };
-
+    ####################################################################
     # compare each student with 5 or more errors to all other students
-    #        1) compare student_1        with (student_2..last)
-    #        2) compare student_2        with (student_3..last)
+    #      step    1) compare student_1        with (student_2..last)
+    #      step    2) compare student_2        with (student_3..last)
     #        ...
-    #     last) comapre student_prelast  with student_last
-
+    #      step last) compare student_prelast  with student_last
+    ####################################################################
     # iterate through all students
     # "@students - 1" because in the last step the student_prelast is compared to the others
     for (my $student_index = 0; $student_index < @suspicious_students - 1; $student_index++){ # "@students - 1" because
@@ -326,21 +311,36 @@ sub detect_misconduct (%students_answers_keys){
             my $count_same_correct_answers = 0;
             my $count_same_wrong_answers = 0;
             for my $i (0 .. $count_questions_in_test - 1) {
+                # both correct answer
                 if( $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 1
                  && $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 1)
                 {
                     $count_same_correct_answers++;
                 }
-                elsif(  $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 0  # both wrong
-                    &&  $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 0
+                #both same wrong answer
+                elsif(      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 0  # both wrong
+                    &&      $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 0
                     &&      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1]   # both same
                         eq  $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][1]
-                    &&  $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1] ne  '')# both not null
+                    &&      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1] ne  '')# both not null
                 {
                     $count_same_wrong_answers++;
                 }
             }
-
+            ####################################################################
+            # print misconduct probability
+            #
+            # probability is computed as follows:
+            #
+            # 1)   1 -                                    # 1 is the highest possible probability
+            # 2)   0.25 ** $count_same_wrong_answers      # 0.25 is the probability to select a wrong answer.
+            #                                             # it's very suspicious when students select the same wrong answer.
+            # 3)   * $count_questions_in_test
+            #           / $count_same_correct_answers     # ratio of total questions in test and same correct answers
+            #                                             # of two students. probability increases when ratio of same
+            #                                             # correct answers is higher.
+            # 4)   * 100                                  # only for formatting
+            ####################################################################
             if($count_same_wrong_answers >= 4){
                 my $probability =   1 -                                                              # 1 ist max probability
                                     0.25**$count_same_wrong_answers                                  # wrong answers in power
@@ -353,4 +353,25 @@ sub detect_misconduct (%students_answers_keys){
             }
         };
     };
+}
+
+sub get_students_with_errors_more_then($max_errors){
+
+    my @suspicious_students;
+    #iterate through all students sorted by name
+    for my $current_student (sort keys %students_answers_keys){
+        my $error_count = 0;
+        # go through answers and count errors
+        for my $i (0 .. @{$students_answers_keys{$current_student}} - 1) {
+            # if error
+            if(!$students_answers_keys{$current_student}->[$i][0]){
+                $error_count++;
+                if($error_count >= $max_errors) {
+                    push @suspicious_students, $current_student;
+                    last; # at least 5 errors, save student and continue with next student
+                };
+            };
+        };
+    };
+    return @suspicious_students;
 }
