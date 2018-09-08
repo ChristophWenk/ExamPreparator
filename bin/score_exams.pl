@@ -30,10 +30,6 @@ use Text::Levenshtein qw(distance);
 # Score Exams
 #====================================================================
 
-#usage
-#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
-#perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/20170828-092520-FHNW_entrance_exam-ID006431
-
 # check console input
 if (@ARGV < 2) {
     say "Missing parameters. Usage:";
@@ -65,9 +61,6 @@ my @student_answers_keys;                   # structure:   [ [question1_option_s
 #                                                          ]
 my %students_scores;              #structure: {student1 => [count_answered_correct, count_answered],
 #                                              student2 => [count_answered_correct, count_answered] }
-my %students_answers;             #structure: {student1 => { question1 => answer1, question2 => answer2, .. },
-#                                              student2 => { question1 => answer1, question2 => answer2, .. }
-#                                             }
 my %students_answers_keys;             #structure: {student1 => [ [bool_correctness, question1_option_selected],
 #                                                                 [bool_correctness, question2_option_selected] ],
 #                                                   student2 => [ [bool_correctness, question1_option_selected],
@@ -83,21 +76,20 @@ my %students_answers_keys;             #structure: {student1 => [ [bool_correctn
 
 # get data for each student
 for my $student_filename (@student_filenames){
-    %student_questions = get_data_from_file($student_filename);
-    %student_questions = sanitize_student_data($student_filename, %student_questions);
-    %student_answers   = get_answers(%student_questions);
-
+    %student_questions        = get_data_from_file($student_filename);
+    %student_questions        = sanitize_student_data($student_filename, %student_questions);
+    %student_answers          = get_answers(%student_questions);
     @student_answers_keys     = check_answers(%student_answers);
 
     # collect student score count for statistics
-    $students_scores{$student_filename} = get_count_answered(@student_answers_keys);
+    $students_scores{$student_filename}       = get_count_answered(@student_answers_keys);
     # collect student answers for misconduct check
     $students_answers_keys{$student_filename} = [ @student_answers_keys ];
 }
 
 # Call statistics module
  create_statistics(%students_scores);
-
+# Call misconduct subroutine
  detect_misconduct (%students_answers_keys);
 
 
@@ -114,15 +106,13 @@ sub get_data_from_file($filename) {
     my %current_options;
     #process file row by row
     while (my $row = readline($filehandle)) {
-        #####################################
-        #todo: remove trim and adjust if regex
-        #####################################
         $row =~ s/^\s+|\s+$//g;           # trim
         # if row starts with a number > its a question
         if(substr($row,0,1) =~ /^\d/) {
+            $row =~ s/^\d+.\s?//g; #remove brackets before option
             $current_question = $row;
         }
-        #if row starts with a "_" try to save a question with all options
+        #if row starts with a "_" or "=" try to save a question with all options
         elsif((substr($row,0,1) eq '_' || substr($row,0,1) eq '=')
                 &&
                 defined($current_question)){
@@ -148,7 +138,7 @@ sub get_data_from_file($filename) {
 sub sanitize_student_data($current_student_filename, %student_questions){
 
     say "... checking $current_student_filename";
-    # go through all master question and check if they are present in students file
+    # go through all master questions and check if they are present in students file
     for my $current_master_question (keys %master_questions)
     {
         # missing question
@@ -188,68 +178,6 @@ sub sanitize_student_data($current_student_filename, %student_questions){
     return %student_questions;
 }
 
-sub get_answers(%questions){
-    my %answers;
-    # go through all questions and save the selected option in %answers
-    for my $current_question (keys %questions) {
-        $answers{$current_question} = undef;
-        # go through all options
-        for my $current_option ( keys %{ $questions{$current_question} } ) {
-            #option selected > save as answer
-            if( $questions{$current_question}{$current_option}
-                && !defined($answers{$current_question})){
-                $answers{$current_question} = $current_option;
-            }
-            #more than one option selected > answer not valid
-            elsif( $questions{$current_question}{$current_option}
-                && defined($answers{$current_question})){
-                $answers{$current_question} = undef;
-                last; # duplicate selection, other options are ignored
-            }
-        }
-    }
-    return %answers;
-}
-
-sub check_answers(%current_student_answers){
-
-    my @current_student_answers_keys;
-
-    # go through all master answers alphabetically and compare with current student answers
-    for my $current_question (sort keys %master_answers){
-        # student answer matches master answer
-        if(defined($current_student_answers{$current_question})
-                && $master_answers{$current_question} eq $current_student_answers{$current_question})
-        {
-            push @current_student_answers_keys, [1, $current_student_answers{$current_question}];
-        }
-        # student answer mismatches master answer
-        elsif(defined($current_student_answers{$current_question})){
-            push @current_student_answers_keys, [0, $current_student_answers{$current_question}];
-        }
-        #student answer not filled out correctly
-        else{
-            push @current_student_answers_keys, [0, undef];
-        }
-    }
-    return @current_student_answers_keys;
-}
-
-sub get_count_answered(@current_student_answers_keys){
-    my $count_answered = 0;
-    my $count_answered_correct = 0;
-
-    for my $i ( 0 .. $#current_student_answers_keys ) {
-        if($current_student_answers_keys[$i]->[0]){
-            $count_answered_correct++;
-        }
-        if($current_student_answers_keys[$i]->[1]){
-            $count_answered++;
-        }
-    }
-    return [$count_answered_correct, $count_answered];
-}
-
 sub lookup_similar_string($string_to_find, @library) {
 
     my $normalized_string_to_find = normalize_string($string_to_find);
@@ -282,18 +210,155 @@ sub normalize_string($string){
     return $string;
 }
 
+sub get_answers(%questions_with_selected_options){
+    my %answers;
+    # go through all questions and save the selected option in %answers
+    for my $current_question (keys %questions_with_selected_options) {
+        $answers{$current_question} = undef;
+        # go through all options
+        for my $current_option ( keys %{ $questions_with_selected_options{$current_question} } ) {
+            #option selected > save as answer
+            if( $questions_with_selected_options{$current_question}{$current_option}
+                && !defined($answers{$current_question})){
+                $answers{$current_question} = $current_option;
+            }
+            #more than one option selected > answer not valid
+            elsif( $questions_with_selected_options{$current_question}{$current_option}
+                && defined($answers{$current_question})){
+                $answers{$current_question} = undef;
+                last; # duplicate selection, other options are ignored
+            }
+        }
+    }
+    return %answers;
+}
+
+sub check_answers(%current_student_answers){
+
+    my @current_student_answers_keys;
+
+    # go through all master answers alphabetically and compare with current student answers
+    for my $current_question (sort keys %master_answers){
+        # student answer matches master answer
+        if(defined($current_student_answers{$current_question})
+                && $master_answers{$current_question} eq $current_student_answers{$current_question})
+        {
+            push @current_student_answers_keys, [1, $current_student_answers{$current_question}];
+        }
+        # student answer mismatches master answer
+        elsif(defined($current_student_answers{$current_question})){
+            push @current_student_answers_keys, [0, $current_student_answers{$current_question}];
+        }
+        #student answer not filled out correctly
+        else{
+            push @current_student_answers_keys, [0, ''];
+        }
+    }
+    return @current_student_answers_keys;
+}
+
+sub get_count_answered(@current_student_answers_keys){
+    my $count_answered = 0;
+    my $count_answered_correct = 0;
+
+    for my $i ( 0 .. $#current_student_answers_keys ) {
+        #answer filled out correctly
+        if($current_student_answers_keys[$i]->[0]){
+            $count_answered_correct++;
+        }
+        #answer filled out
+        if($current_student_answers_keys[$i]->[1]){
+            $count_answered++;
+        }
+    }
+    return [$count_answered_correct, $count_answered];
+}
 
 sub detect_misconduct (%students_answers_keys){
+    say "#============================================================#";
+    say "# Possible Misconduct                                        #";
+    say "#============================================================#";
 
-    for my $current_student (keys %students_answers_keys){
+    my @suspicious_students = get_students_with_errors_more_then(5);
+    my $count_questions_in_test = scalar(@{$students_answers_keys{(keys %students_answers_keys)[0]}});
 
-        for my $i (0 .. @{$students_answers_keys{$current_student}}) {
-            if(defined($students_answers_keys{$current_student}->[$i][0])){
-               # say $students_answers_keys{$current_student}->[$i][0];
-               # say $students_answers_keys{$current_student}->[$i][1];
+    ####################################################################
+    # compare each student with 5 or more errors to all other students
+    #      step    1) compare student_1        with (student_2..last)
+    #      step    2) compare student_2        with (student_3..last)
+    #        ...
+    #      step last) compare student_prelast  with student_last
+    ####################################################################
+    # iterate through all students
+    # "@students - 1" because in the last step the student_prelast is compared to the others
+    for (my $student_index = 0; $student_index < @suspicious_students - 1; $student_index++){ # "@students - 1" because
+        #say "guilty ". @students[$student_index];
+        # compare current_student to all subsequent students
+        for (my $compare_student_index = $student_index+1; $compare_student_index < @suspicious_students - 1; $compare_student_index++) {
+            my $count_same_correct_answers = 0;
+            my $count_same_wrong_answers = 0;
+            for my $i (0 .. $count_questions_in_test - 1) {
+                # both correct answer
+                if( $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 1
+                 && $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 1)
+                {
+                    $count_same_correct_answers++;
+                }
+                #both same wrong answer
+                elsif(      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][0] == 0  # both wrong
+                    &&      $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][0] == 0
+                    &&      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1]   # both same
+                        eq  $students_answers_keys{$suspicious_students[$compare_student_index]}->[$i][1]
+                    &&      $students_answers_keys{$suspicious_students[$student_index]}->        [$i][1] ne  '')# both not null
+                {
+                    $count_same_wrong_answers++;
+                }
             }
+            ####################################################################
+            # print misconduct probability
+            #
+            # probability is computed as follows:
+            #
+            # 1)   1 -                                    # 1 is the highest possible probability
+            # 2)   0.25 ** $count_same_wrong_answers      # 0.25 is the probability to select a wrong answer.
+            #                                             # it's very suspicious when students select the same wrong answer.
+            # 3)   * $count_questions_in_test
+            #           / $count_same_correct_answers     # ratio of total questions in test and same correct answers
+            #                                             # of two students. probability increases when ratio of same
+            #                                             # correct answers is higher.
+            # 4)   * 100                                  # only for formatting
+            ####################################################################
+            if($count_same_wrong_answers >= 4){
+                my $probability =   1 -                                                              # 1 ist max probability
+                                    0.25**$count_same_wrong_answers                                  # wrong answers in power
+                                        * ($count_questions_in_test / $count_same_correct_answers)   # ratio question total and correct answers
+                                        * 100;                                                       # visual correction
 
+                say "    " . $suspicious_students[$student_index].        "............. probability:  ". sprintf("%.2f", $probability)
+                    ."  (same correct/wrong: ". $count_same_correct_answers."/". $count_same_wrong_answers.")";
+                say "and " . $suspicious_students[$compare_student_index];
+            }
         };
     };
+}
 
+sub get_students_with_errors_more_then($max_errors){
+
+    my @suspicious_students;
+    #iterate through all students sorted by name
+    for my $current_student (sort keys %students_answers_keys){
+        my $error_count = 0;
+        # go through answers and count errors
+        for my $i (0 .. @{$students_answers_keys{$current_student}} - 1) {
+            # if error
+            if(!$students_answers_keys{$current_student}->[$i][0]){
+                $error_count++;
+                if($error_count >= $max_errors) {
+                    push @suspicious_students, $current_student;
+                    last; # at least 5 errors, save student and continue with next student
+                };
+            };
+        };
+    };
+    return @suspicious_students;
 }
