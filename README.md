@@ -35,6 +35,6 @@ Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_m
 Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file> [response_file] [...]*
 
 **Process all files**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*\*
 
 The output will be presented in the console.
