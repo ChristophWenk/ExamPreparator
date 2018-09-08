@@ -29,12 +29,12 @@ The generated master file be written to *out/{timestamp}-{input_file_name}*
 To analyze the response files place them in the *resources/Responses/* directory.
 
 **Process a single file**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file>
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file>*
 
 **Process multiple files**
 Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\<response_file> [response_file] [...]*
 
 **Process all files**
-Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/\**
+Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*
 
 The output will be presented in the console.
