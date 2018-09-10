@@ -2,9 +2,9 @@
 Perl project to automatically create and mark exams.
 The application consists of two scripts and one module:
 
-- create_master_file.pl
-- score_exams.pl
-- statistics.pm
+- create_master_file.pl (part 1a)
+- score_exams.pl (part 1b, 2, 4)
+- statistics.pm (part 3)
 
 **create_master_file** takes a master answer file template as input, removes all previously set [X] from the answers, scrambles the order of the answers for each question and writes the result to an output file.
 
