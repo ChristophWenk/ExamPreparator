@@ -328,12 +328,16 @@ sub detect_misconduct (%students_answers_keys){
             #                                             # correct answers is higher.
             # 4)   * 100                                  # only for formatting
             ####################################################################
-            if($count_same_wrong_answers >= 4){
-                my $probability =   1 -                                                              # 1 ist max probability
-                                    0.25**$count_same_wrong_answers                                  # wrong answers in power
-                                        * ($count_questions_in_test / $count_same_correct_answers)   # ratio question total and correct answers
-                                        * 100;                                                       # visual correction
-
+            # compute probability if a student has at least 4 same wrong anwsers ans another
+            my $probability = 0;
+            if($count_same_wrong_answers >= 4) {
+                $probability = 1 -                                              # 1 ist max probability
+                    0.25 ** $count_same_wrong_answers                              # wrong answers in power
+                        * ($count_questions_in_test / $count_same_correct_answers) # ratio question total and correct answers
+                        * 100;                                                     # visual correction
+            }
+            # print misconduct if probability > 0.3
+            if($probability > 0.3){
                 say "    " . $suspicious_students[$student_index].        "............. probability:  ". sprintf("%.2f", $probability)
                     ."  (same correct/wrong: ". $count_same_correct_answers."/". $count_same_wrong_answers.")";
                 say "and " . $suspicious_students[$compare_student_index];
