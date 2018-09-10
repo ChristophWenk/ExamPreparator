@@ -38,3 +38,18 @@ Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_m
 Call syntax: *perl bin/score_exams.pl resources/MasterFiles/FHNW_entrance_exam_master_file_2017.txt resources/Responses/*\*
 
 The output will be presented in the console.
+
+####################################################################
+# print misconduct probability
+#
+# probability is computed as follows:
+#
+# 1)   1 -                                    # 1 is the highest possible probability
+# 2)   0.25 ** $count_same_wrong_answers      # 0.25 is the probability to select a wrong answer.
+#                                             # it's very suspicious when students select the same wrong answer.
+# 3)   * $count_questions_in_test
+#           / $count_same_correct_answers     # ratio of total questions in test and same correct answers
+#                                             # of two students. probability increases when ratio of same
+#                                             # correct answers is higher.
+# 4)   * 100                                  # only for formatting
+####################################################################
